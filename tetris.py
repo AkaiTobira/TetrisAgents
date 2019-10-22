@@ -9,6 +9,7 @@ from agent_grad       import GradAi
 from agent_evolution  import EvolutionAi
 from agent_nnetwork   import NeuralEvolutionAi
 from agent_pso        import PSOAi
+from agent_rlearning  import ReinforcmentLearning
 
 import math
 import time
@@ -106,7 +107,7 @@ class TetrisDisplayers:
 
         self.grid       = []
         for i in range(GRID_WIDTH):
-             for j in range(GRID_HEIGHT):
+            for j in range(GRID_HEIGHT):
                 self.grid.append( GridCell( screen , ( (i * SQUARE_SIZE) + OFFSET, (j * SQUARE_SIZE) + OFFSET )))
 
     def drawGrid(self):
@@ -161,7 +162,8 @@ class Tetris:
     enable_draw = True
 
     player_index  = 0
-    players       = [ None, EvolutionAi(), GradAi(), PSOAi(), NeuralEvolutionAi()  ]
+    players       = [ None,       EvolutionAi(), GradAi(),   PSOAi(),    NeuralEvolutionAi(), ReinforcmentLearning() ]
+    players_keys  = [ pygame.K_1, pygame.K_2,    pygame.K_3, pygame.K_4, pygame.K_5,          pygame.K_6]
 
     number_of_tetrominos = 0
 
@@ -170,6 +172,7 @@ class Tetris:
         self.logic      = TetrisLogic()
         self.displayers = TetrisDisplayers(screen)
         self.reset()
+
 
     def reset(self):
         self.number_of_tetrominos = 0
@@ -218,40 +221,16 @@ class Tetris:
                 self.enable_draw = not self.enable_draw
                 return
 
-            if event.key == pygame.K_1:
-                self.reset()
-                self.player_index = 0
-                self.drop_time    = 1.0
-                return
-
-            if event.key == pygame.K_2:
-                self.reset()
-                self.player_index = 1
-                self.drop_time    = 0.0
-                self.players[self.player_index].select_bestMove(self.spawner.c_tetromino, self.logic.get_grid())
-                return
-
-            if event.key == pygame.K_3:
-                self.reset()
-                self.player_index = 2
-                self.drop_time    = 0.0
-                self.players[self.player_index].select_bestMove(self.spawner.c_tetromino, self.logic.get_grid())
-                return
-
-            if event.key == pygame.K_4:
-                self.reset()
-                self.player_index = 3
-                self.drop_time    = 0.0
-                self.players[self.player_index].select_bestMove(self.spawner.c_tetromino, self.logic.get_grid())
-                return
-
-            if event.key == pygame.K_5:
-                self.reset()
-                self.player_index = 4
-                self.drop_time    = 0.0
-                self.players[self.player_index].select_bestMove(self.spawner.c_tetromino, self.logic.get_grid())
-                return
-
+            for key_i in range(len(self.players_keys)):
+                if event.key == self.players_keys[key_i]:
+                    self.reset()
+                    self.drop_time    = 1.0
+                    self.player_index = key_i
+                    if self.players[self.player_index]:
+                        self.drop_time    = 0.0
+                        self.players[self.player_index].select_bestMove(self.spawner.c_tetromino, self.logic.get_grid())
+                        return
+                        
             if event.key == pygame.K_z:
                 self.drop_time = 0.0
             if event.key == pygame.K_p:
@@ -321,7 +300,7 @@ class TetrisGrid:
                 if self.grid[i][j] != get_color(Colors.BLACK): 
                     self.heights[i]  = abs( GRID_HEIGHT - j )
                     break
-  
+
         for i in range(GRID_WIDTH):
             self.holes[i] = 0
             for j in range( 0, GRID_HEIGHT-1, 1):
