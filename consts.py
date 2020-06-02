@@ -13,7 +13,6 @@ import datetime
 DATE_TIME = datetime.datetime.now()
 DATE_TIME = str(DATE_TIME.year) + str(DATE_TIME.month) + str(DATE_TIME.day) + "_" + str(DATE_TIME.hour) + str(DATE_TIME.minute) + str(DATE_TIME.second)
 
-
 class Colors(Enum):
 	LIGHT_BLUE   = 1
 	LIGHT_PURPLE = 2

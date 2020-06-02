@@ -10,11 +10,124 @@ from agent_evolution  import EvolutionAi
 from agent_nnetwork   import NeuralEvolutionAi
 from agent_pso        import PSOAi
 from agent_rlearning  import ReinforcmentLearning
+from agent_rnetwork   import ReinforcmentNetwork
+
+class TetrisGrid:
+    grid = []
+
+    heights    = [0,0,0,0,0,0,0,0,0,0]
+    holes      = [0,0,0,0,0,0,0,0,0,0]
+
+    clearedRow = 0
+    maxColumn  = 0
+    sumHeight  = 0
+    sumHoles   = 0
+    bumpiness  = 0
+
+    def __init__(self):
+        self.grid = []
+        for i in range(GRID_WIDTH):
+            self.grid.append([])
+            for j in range(GRID_HEIGHT):
+                self.grid[i].append(  get_color(Colors.BLACK) )
+
+    def clone(self):
+        t = TetrisGrid()
+        for i in range(GRID_WIDTH):
+            for j in range(GRID_HEIGHT):
+                t[i][j] = get_color(Colors.BLACK) if self.grid[i][j] == get_color(Colors.BLACK) else get_color(Colors.GOLD)
+        t.clearedRow = self.clearedRow
+        t.maxColumn  = self.maxColumn
+        t.sumHeight  = self.sumHeight
+        t.sumHoles   = self.sumHoles
+        t.bumpiness  = self.bumpiness
+        return t        
+
+    def __evaluate(self, tetromino):
+        self.clearedRow = self.clear_full_rows(tetromino.position, tetromino.get_size())
+
+        for i in range( 0, GRID_WIDTH):
+            self.heights[i] = 0
+            for j in range( 0, GRID_HEIGHT ):
+                if self.grid[i][j] != get_color(Colors.BLACK): 
+                    self.heights[i]  = abs( GRID_HEIGHT - j )
+                    break
+
+        for i in range(GRID_WIDTH):
+            self.holes[i] = 0
+            for j in range( 0, GRID_HEIGHT-1, 1):
+                if self.grid[i][j] != get_color(Colors.BLACK) and self.grid[i][j+1] == get_color(Colors.BLACK):
+                    self.holes[i] += 1
+        
+        self.maxColumn = max(self.heights)
+        self.sumHeight = sum(self.heights)
+        self.sumHoles  = sum(self.holes)
+        self.bumpiness = 0
+
+        for i in range( 0, GRID_WIDTH ):
+            if not i == 0: self.bumpiness += math.fabs( self.heights[i-1] - self.heights[i] )
+
+    def lock(self, tetromino, color=(255,215,0)):
+        shape_size = tetromino.get_size()
+        shape      = tetromino.get_shape()
+        pos        = tetromino.position
+
+        if tetromino.is_locked : return
+
+        for i in range(shape_size[0], shape_size[2], 1):
+            for j in range(shape_size[1], shape_size[3], 1):
+                if shape[j][i]: self.grid[pos[0] + i][ pos[1] + j] = color
+        self.__evaluate(tetromino)
+
+    def _check_row(self, j):
+        for i in range(GRID_WIDTH):
+            if self.grid[ i ][ j ] == get_color(Colors.BLACK) : return False
+        return True
+
+    def find_rows_to_delete(self, pos, shape_size):
+        rows_to_delete = []
+        for j in range(shape_size[1], shape_size[3], 1):
+            if self._check_row(pos[1] + j): rows_to_delete.append( pos[1] + j ) 
+        return rows_to_delete
+
+    def clear_full_rows(self, position, shape):
+        rows_to_delete = self.find_rows_to_delete(position, shape)
+        for i in range(len(rows_to_delete)):
+            for j in range(GRID_WIDTH):
+                del self.grid[j][rows_to_delete[i]]
+                self.grid[j].insert(0,  get_color(Colors.BLACK) )
+        return len(rows_to_delete)
+
+    def remove_rows(self, rows_to_delete):
+        for i in range(len(rows_to_delete)):
+            for j in range(GRID_WIDTH):
+                del self.grid[j][rows_to_delete[i]]
+                self.grid[j].insert(0,  get_color(Colors.BLACK) )
+
+    def unlock( self, tetromino): pass
+
+    def __str__(self):
+        s = ""
+        for j in range( GRID_HEIGHT):
+            for i in range(GRID_WIDTH): 
+                s += "1 " if self.grid[i][j] == get_color(Colors.BLACK) else "0 "
+            s += "\n"
+        return s
+
+    def __getitem__(self, i):
+        return self.grid[i]
+
+    def __setitem__(self, i, c):
+        self.grid[i] = c
+
+
+
+#from agent_experimental import PredifinedLearning
 
 import math
 import time
 
-ROW_MULTIPLER = 10000
+ROW_MULTIPLER = 1000000
 
 class RandomSpawnTetromino:
     c_tetromino = None
@@ -38,6 +151,7 @@ class RandomSpawnTetromino:
         self.n_tetromino = self.tetrominos[self.index]
         
         if self.index == 0:
+            #self.tetrominos = [O(),O(),O(),O(),O(),O(),O()]
             self.tetrominos = [ O(), N(),  Z(), T(), J(), L(), I()]
             shuffle(self.tetrominos)
 
@@ -162,8 +276,8 @@ class Tetris:
     enable_draw = True
 
     player_index  = 0
-    players       = [ None,       EvolutionAi(), GradAi(),   PSOAi(),    NeuralEvolutionAi(), ReinforcmentLearning() ]
-    players_keys  = [ pygame.K_1, pygame.K_2,    pygame.K_3, pygame.K_4, pygame.K_5,          pygame.K_6]
+    players       = [ None,       EvolutionAi(), GradAi(),   PSOAi(),    ReinforcmentNetwork()] #NeuralEvolutionAi(), ReinforcmentLearning()]#, PredifinedLearning() ]
+    players_keys  = [ pygame.K_1, pygame.K_2,    pygame.K_3, pygame.K_4, pygame.K_5           ] #pygame.K_5,          pygame.K_6,           ]#  pygame.K_7]
 
     number_of_tetrominos = 0
 
@@ -203,7 +317,7 @@ class Tetris:
             self.logic.score += self.players[self.player_index].select_bestMove(self.spawner.c_tetromino, self.logic.get_grid())* ROW_MULTIPLER
             self.score = self.logic.score
             if self.enable_draw : self.displayers.synchronize_numbers(self.score, [0,0,0,0,0,0,0], [1,1,1,1] )
-        if self.logic.game_over() or self.number_of_tetrominos > 500 :
+        if self.logic.game_over() or self.number_of_tetrominos > 5000 :
             self.players[self.player_index].set_score(self.score, self.number_of_tetrominos)    
             self.reset()
 
@@ -211,7 +325,6 @@ class Tetris:
         if not self.logic.progress_tetromino(self.spawner.c_tetromino):
             self.spawner.get_next()
             self.score = self.logic.score
-
             if self.enable_draw : self.displayers.synchronize_numbers(self.score, [0,0,0,0,0,0,0], [1,1,1,1] )
         if self.logic.game_over(): self.reset()
 
@@ -260,110 +373,3 @@ class Tetris:
                 #self.spawner.get_next()
                 return
 
-class TetrisGrid:
-    grid = []
-
-    heights    = [0,0,0,0,0,0,0,0,0,0]
-    holes      = [0,0,0,0,0,0,0,0,0,0]
-
-    clearedRow = 0
-    maxColumn  = 0
-    sumHeight  = 0
-    sumHoles   = 0
-    bumpiness  = 0
-
-    def __init__(self):
-        self.grid = []
-        for i in range(GRID_WIDTH):
-            self.grid.append([])
-            for j in range(GRID_HEIGHT):
-                self.grid[i].append(  get_color(Colors.BLACK) )
-
-    def clone(self):
-        t = TetrisGrid()
-        for i in range(GRID_WIDTH):
-            for j in range(GRID_HEIGHT):
-                t[i][j] = get_color(Colors.BLACK) if self.grid[i][j] == get_color(Colors.BLACK) else get_color(Colors.GOLD)
-        t.clearedRow = self.clearedRow
-        t.maxColumn  = self.maxColumn
-        t.sumHeight  = self.sumHeight
-        t.sumHoles   = self.sumHoles
-        t.bumpiness  = self.bumpiness
-        return t        
-
-    def __evaluate(self, tetromino):
-        self.clearedRow = self.clear_full_rows(tetromino.position, tetromino.get_size())
-
-        for i in range( 0, GRID_WIDTH):
-            self.heights[i] = 0
-            for j in range( 0, GRID_HEIGHT ):
-                if self.grid[i][j] != get_color(Colors.BLACK): 
-                    self.heights[i]  = abs( GRID_HEIGHT - j )
-                    break
-
-        for i in range(GRID_WIDTH):
-            self.holes[i] = 0
-            for j in range( 0, GRID_HEIGHT-1, 1):
-                if self.grid[i][j] != get_color(Colors.BLACK) and self.grid[i][j+1] == get_color(Colors.BLACK):
-                    self.holes[i] += 1
-        
-        self.maxColumn = max(self.heights)
-        self.sumHeight = sum(self.heights)
-        self.sumHoles  = sum(self.holes)
-        self.bumpiness = 0
-
-        for i in range( 0, GRID_WIDTH ):
-            if not i == 0: self.bumpiness += math.fabs( self.heights[i-1] - self.heights[i] )
-
-    def lock(self, tetromino, color=(255,215,0)):
-        shape_size = tetromino.get_size()
-        shape      = tetromino.get_shape()
-        pos        = tetromino.position
-
-        if tetromino.is_locked : return
-
-        for i in range(shape_size[0], shape_size[2], 1):
-            for j in range(shape_size[1], shape_size[3], 1):
-                if shape[j][i]: self.grid[pos[0] + i][ pos[1] + j] = color
-        self.__evaluate(tetromino)
-
-    def _check_row(self, j):
-        for i in range(GRID_WIDTH):
-            if self.grid[ i ][ j ] == get_color(Colors.BLACK) : return False
-        return True
-
-    def find_rows_to_delete(self, pos, shape_size):
-        rows_to_delete = []
-        for j in range(shape_size[1], shape_size[3], 1):
-            if self._check_row(pos[1] + j): rows_to_delete.append( pos[1] + j ) 
-        return rows_to_delete
-
-    def clear_full_rows(self, position, shape):
-        rows_to_delete = self.find_rows_to_delete(position, shape)
-        for i in range(len(rows_to_delete)):
-            for j in range(GRID_WIDTH):
-                del self.grid[j][rows_to_delete[i]]
-                self.grid[j].insert(0,  get_color(Colors.BLACK) )
-        return len(rows_to_delete)
-
-    def remove_rows(self, rows_to_delete):
-        for i in range(len(rows_to_delete)):
-            for j in range(GRID_WIDTH):
-                del self.grid[j][rows_to_delete[i]]
-                self.grid[j].insert(0,  get_color(Colors.BLACK) )
-
-    def unlock( self, tetromino): pass
-
-    def __str__(self):
-        s = ""
-        for j in range( GRID_HEIGHT):
-            for i in range(GRID_WIDTH): 
-                s += "1" if self.grid[i][j] == get_color(Colors.BLACK) else "0"
-            s += "\n"
-        return s
-
-    def __getitem__(self, i):
-        return self.grid[i]
-
-    def __setitem__(self, i, c):
-        self.grid[i] = c

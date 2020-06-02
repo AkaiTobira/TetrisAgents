@@ -8,9 +8,9 @@ EVOLUTION_VECTOR_DIMENSIONS = 4
 
 class EvolutionAlgoritm:
 	population             = []
-	POPULATION_SIZE        = 10
-	MUTATION_RATE          = 40
-	NUMBER_OF_PLAYED_GAMES = 1
+	POPULATION_SIZE        = 50
+	MUTATION_RATE          = 30
+	NUMBER_OF_PLAYED_GAMES = 5
 	curenntly_played_game  = 0
 	dumps                  = None
 	moves                  = None

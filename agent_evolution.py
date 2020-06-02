@@ -29,7 +29,7 @@ class EvolutionAi:
         return ( grid.maxColumn * self.current_values[0] + 
                  grid.sumHeight * self.current_values[1] + 
                  grid.sumHoles  * self.current_values[2] + 
-                 grid.bumpiness * self.current_values[3] + grid.clearedRow
+                 grid.bumpiness * self.current_values[3] #+ grid.clearedRow
                  )
 
     def select_bestMove(self, t, grid):

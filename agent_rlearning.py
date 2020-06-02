@@ -8,6 +8,7 @@ import pygame
 import math
 import copy
 import datetime
+import keras
 
 from vector import Vector
 from random import uniform, randint
@@ -17,10 +18,10 @@ from consts    import *
 class ReinforcmentLearning:
     nn = None
     animation = []
-    cold      = 0.99
+    cold      = 0.5
 
-    def __init__(self):
-        self.nn = MultidimensionalDictionary( 4, (-2,-1, 0, 1, 2))
+    def __init__(self): pass
+    #    self.nn = MultidimensionalDictionary( 4, (-5,-4,-3,-2,-1, 0, 1, 2, 3,4,5))
 
     def select_move( self, tetromino, grid):
         situation = []
@@ -36,7 +37,7 @@ class ReinforcmentLearning:
             current = self.nn.get_value( tetromino, situation)
             #print(current)
             if current >= best:
-                self.animation = self.nn._fragment
+                self.animation = self.nn._memorised_sequence
                 best      = current
             if tetromino.can_rotate : tetromino.rotate_left()
 
@@ -53,22 +54,18 @@ class ReinforcmentLearning:
         for values in range(len(grid.heights)-1):
             situation.append( grid.heights[values] - grid.heights[values+1] )
 
-        
         best = self.nn.get_random_value( tetromino, situation)
-        self.animation = self.nn._fragment
+        self.animation = self.nn._memorised_sequence
         
+        print( "Random best ",  best )
+
         tetromino.current_rotate =   best[1]
         tetromino.position       = [ best[2], 0 ]
-
-
-
-
-
 
     def select_bestMove(self, tetromino, grid ) : 
         if uniform(0,1) < self.cold:
             print( self.cold, " is random")
-            self.cold *= 0.999
+            self.cold *= 0.99
             self.select_random_move(tetromino, grid)
         else : self.select_move( tetromino, grid)
 
@@ -78,16 +75,15 @@ class ReinforcmentLearning:
 
         tetromino.is_locked = True
 
-        self.nn._fragment = self.animation
+        self.nn._memorised_sequence = self.animation
         print( self.animation)
         self.nn.update(score)
 
         return score
 
     def set_score(self, score, number_of_tetrominos):
-        self.cold *= 2
-
-
+        if score < 1000: self.cold = 0.5
+        #self.cold = min( self.cold * 2, 0.5 ) 
         pass
 
     def simulate_move( self, x_pos,  t, rotation, board):
@@ -105,8 +101,6 @@ class ReinforcmentLearning:
                 t.position[1] -= 1
                 self.lock_tetromino(board,t)
                 return self.clear_full_rows( t.position, t.get_size(), board )
-
-
 
     def lock_tetromino(self, grid , t):
         shape_size = t.get_size()
@@ -136,6 +130,3 @@ class ReinforcmentLearning:
                 del grid[j][rows_to_delete[i]]
                 grid[j].insert(0,  get_color(Colors.BLACK) )
         return len(rows_to_delete)
-
-
-

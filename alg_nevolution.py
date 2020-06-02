@@ -22,12 +22,12 @@ class NeuralEvolution:
         self.population = []
         self.unchecked_population = []
 
-        for i in range(self.POPULATION_SIZE):
-            self.population.append([NeuralNetwork( 227, 3, 128, 32), 0])
-            print( i, " Network done")
+#        for i in range(self.POPULATION_SIZE):
+ #           self.population.append([NeuralNetwork( 227, 3, 128, 32), 0])
+  #          print( i, " Network done")
 
-        for i in range( self.POPULATION_SIZE):
-            self.unchecked_population.append( [ i, self.population[i][0], 0 ] )
+   #     for i in range( self.POPULATION_SIZE):
+    #        self.unchecked_population.append( [ i, self.population[i][0], 0 ] )
 
     def add_score(self, score, cleaned):
         
