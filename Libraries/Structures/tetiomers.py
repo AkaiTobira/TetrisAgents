@@ -72,7 +72,7 @@ class Tetromino:
         for i in range(self.get_size()[0], self.get_size()[2], 1):
             for j in range(self.get_size()[1], self.get_size()[3], 1):
             #    if self.position[1] 
-                if self.get_shape()[j][i] and grid[self.position[0] + i][ self.position[1] + j] != get_color(Colors.BLACK):
+                if self.get_shape()[j][i] and grid[self.position[0] + i][ self.position[1] + j] != 0:
                     return False
         return True
 

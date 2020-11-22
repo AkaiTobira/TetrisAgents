@@ -23,13 +23,13 @@ class TetrisGrid:
         for i in range(GRID_WIDTH):
             self.grid.append([])
             for j in range(GRID_HEIGHT):
-                self.grid[i].append(  get_color(Colors.BLACK) )
+                self.grid[i].append( 0 )
 
     def clone(self):
         t = TetrisGrid()
         for i in range(GRID_WIDTH):
             for j in range(GRID_HEIGHT):
-                t[i][j] = get_color(Colors.BLACK) if self.grid[i][j] == get_color(Colors.BLACK) else get_color(Colors.GOLD)
+                t[i][j] = 0 if self.grid[i][j] == 0 else 99
         t.clearedRow = self.clearedRow
         t.maxColumn  = self.maxColumn
         t.sumHeight  = self.sumHeight
@@ -43,14 +43,14 @@ class TetrisGrid:
         for i in range( 0, GRID_WIDTH):
             self.heights[i] = 0
             for j in range( 0, GRID_HEIGHT ):
-                if self.grid[i][j] != get_color(Colors.BLACK): 
+                if self.grid[i][j] != 0: 
                     self.heights[i]  = abs( GRID_HEIGHT - j )
                     break
 
         for i in range(GRID_WIDTH):
             self.holes[i] = 0
             for j in range( 0, GRID_HEIGHT-1, 1):
-                if self.grid[i][j] != get_color(Colors.BLACK) and self.grid[i][j+1] == get_color(Colors.BLACK):
+                if self.grid[i][j] != 0 and self.grid[i][j+1] == 0:
                     self.holes[i] += 1
         
         self.maxColumn = max(self.heights)
@@ -70,12 +70,12 @@ class TetrisGrid:
 
         for i in range(shape_size[0], shape_size[2], 1):
             for j in range(shape_size[1], shape_size[3], 1):
-                if shape[j][i]: self.grid[pos[0] + i][ pos[1] + j] = color
+                if shape[j][i]: self.grid[pos[0] + i][ pos[1] + j] = tetromino.m_id
         self.__evaluate(tetromino)
 
     def _check_row(self, j):
         for i in range(GRID_WIDTH):
-            if self.grid[ i ][ j ] == get_color(Colors.BLACK) : return False
+            if self.grid[ i ][ j ] == 0 : return False
         return True
 
     def find_rows_to_delete(self, pos, shape_size):
@@ -89,14 +89,14 @@ class TetrisGrid:
         for i in range(len(rows_to_delete)):
             for j in range(GRID_WIDTH):
                 del self.grid[j][rows_to_delete[i]]
-                self.grid[j].insert(0,  get_color(Colors.BLACK) )
+                self.grid[j].insert(0,  0 )
         return len(rows_to_delete)
 
     def remove_rows(self, rows_to_delete):
         for i in range(len(rows_to_delete)):
             for j in range(GRID_WIDTH):
                 del self.grid[j][rows_to_delete[i]]
-                self.grid[j].insert(0,  get_color(Colors.BLACK) )
+                self.grid[j].insert(0,  0 )
 
     def unlock( self, tetromino): pass
 
@@ -104,7 +104,7 @@ class TetrisGrid:
         s = ""
         for j in range( GRID_HEIGHT):
             for i in range(GRID_WIDTH): 
-                s += "1 " if self.grid[i][j] == get_color(Colors.BLACK) else "0 "
+                s += "1 " if self.grid[i][j] == 0 else "0 "
             s += "\n"
         return s
 
@@ -169,7 +169,7 @@ class TetrisLogic:
 
     def game_over(self):
         for i in range(GRID_WIDTH):
-            if self.logic_grid[ i ][ 1 ] != get_color(Colors.BLACK) : return True
+            if self.logic_grid[ i ][ 1 ] != 0 : return True
         return False
 
 class TetrisDisplayers:
@@ -221,7 +221,7 @@ class TetrisDisplayers:
         if not self.enable_draw : return
         for i in range(GRID_WIDTH):
             for j in range(GRID_HEIGHT):
-                self.grid[self._convert_index(i,j)].fill_cell(grid[i][j])   
+                self.grid[self._convert_index(i,j)].fill_cell( get_color( Colors(grid[i][j])))   
 
     def synchronize_numbers(self, score):
         #self.heures.process(heuresitcs, values)

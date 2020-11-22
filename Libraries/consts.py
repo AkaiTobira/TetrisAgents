@@ -26,15 +26,15 @@ AppKeys = _KeysTuple(      pygame.K_F1 ,        pygame.K_z ,    pygame.K_p ,   p
 
 class Colors(Enum):
 	LIGHT_BLUE   = 1
-	LIGHT_PURPLE = 2
-	LIGHT_PURPL2 = 3	
-	LIGHT_RED    = 4
-	LIGHTER_RED  = 5
+	LIGHT_PURPLE = 17
+	LIGHT_PURPL2 = 9	
+	LIGHT_RED    = 8
+	LIGHTER_RED  = 10
 	RED          = 6
-	GREEN        = 7
-	YELLOW       = 8
-	DARK_YELLOW  = 9
-	BLUE         = 10
+	GREEN        = 5
+	YELLOW       = 4
+	DARK_YELLOW  = 19
+	BLUE         = 7
 	BLACK        = 0
 	NAVYBLUE	 = 11
 	WHITE		 = 12
@@ -42,9 +42,9 @@ class Colors(Enum):
 	KHAKI        = 14
 	ORANGERED    = 15
 	GOLD         = 16
-	GRAY         = 17
+	GRAY         = 2
 	CRIMSON      = 18
-	DARK_VIOLET  = 19
+	DARK_VIOLET  = 3
 	
 def get_color( color ):
 	if color == Colors.DARK_VIOLET:
