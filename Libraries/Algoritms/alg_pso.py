@@ -1,9 +1,9 @@
 from random import uniform, randint
 from math   import sqrt
 from copy   import deepcopy
-from consts import DATE_TIME
+from Libraries.consts import DATE_TIME
 
-from vector import Vector
+from Libraries.vector import Vector
 
 class Particle:
     dir_v      = None

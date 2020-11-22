@@ -1,8 +1,8 @@
 import pygame
 import math
 
-from alg_evolution import EvolutionAlgoritm
-from consts        import *
+from Libraries.Algoritms.alg_evolution import EvolutionAlgoritm
+from Libraries.consts        import *
 
 class EvolutionAi:
     evolution_alg  = None

@@ -1,8 +1,8 @@
 from random import uniform, randint
 from math   import sqrt
-from vector import Vector
+from Libraries.vector import Vector
 import time
-from consts import DATE_TIME
+from Libraries.consts import DATE_TIME
 
 EVOLUTION_VECTOR_DIMENSIONS = 4
 

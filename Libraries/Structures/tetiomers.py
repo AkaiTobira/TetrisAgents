@@ -1,5 +1,5 @@
 from enum   import Enum
-from consts import *
+from Libraries.consts import *
 import copy
 
 class Tetromino:

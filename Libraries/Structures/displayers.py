@@ -1,7 +1,7 @@
 import pygame
 
-from consts    import *
-from grid_cell import GridCell
+from Libraries.consts    import *
+from Libraries.Structures.grid_cell import GridCell
 
 class DisplayerBase:
     screen   = None

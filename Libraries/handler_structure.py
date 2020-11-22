@@ -1,7 +1,7 @@
 
 import pprint
 from random import randint
-from tetiomers  import *
+from Libraries.Structures.tetiomers  import *
 
 lis = [ N(), Z(), O(), J(), L(), T(), I()]
 

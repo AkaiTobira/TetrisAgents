@@ -1,7 +1,7 @@
 
-from neural_network import NeuralNetwork
-from tetiomers      import O,L,N,Z,T,I,J
-from consts         import get_color, Colors
+from Libraries.Algoritms.neural_network import NeuralNetwork
+from Libraries.Structures.tetiomers      import O,L,N,Z,T,I,J
+from Libraries.consts         import get_color, Colors
 
 class NeuralNetworkAi:
     nn = None
@@ -46,7 +46,7 @@ class NeuralNetworkAi:
         Q = 1/2 * error * error
 
 
-from alg_nevolution import NeuralEvolution
+from Libraries.Algoritms.alg_nevolution import NeuralEvolution
 
 class NeuralEvolutionAi:
     ne = None

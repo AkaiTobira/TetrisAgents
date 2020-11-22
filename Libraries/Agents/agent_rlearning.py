@@ -1,8 +1,8 @@
 
-from neural_network    import NeuralNetwork
-from tetiomers         import O,L,N,Z,T,I,J
-from consts            import get_color, Colors
-from handler_structure import MultidimensionalDictionary
+from Libraries.Algoritms.neural_network    import NeuralNetwork
+from Libraries.Structures.tetiomers         import O,L,N,Z,T,I,J
+from Libraries.consts            import get_color, Colors
+from Libraries.handler_structure import MultidimensionalDictionary
 
 import pygame
 import math
@@ -10,10 +10,10 @@ import copy
 import datetime
 import keras
 
-from vector import Vector
+from Libraries.vector import Vector
 from random import uniform, randint
 
-from consts    import *
+from Libraries.consts    import *
 
 class ReinforcmentLearning:
     nn = None

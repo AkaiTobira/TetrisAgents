@@ -1,8 +1,8 @@
 import pygame
 import math
 
-from alg_pso    import PSO
-from consts import *
+from Libraries.Algoritms.alg_pso    import PSO
+from Libraries.consts import *
 
 class PSOAi:
     pso_alg  = None

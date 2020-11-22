@@ -1,16 +1,16 @@
 import pygame
 
-from tetiomers  import *
-from grid_cell  import GridCell
-from consts     import *
-from displayers import ScoreDisplayer, NextTetiomerBox, HeuresticDisplayer
+from Libraries.Structures.tetiomers  import *
+from Libraries.Structures.grid_cell  import GridCell
+from Libraries.consts     import *
+from Libraries.Structures.displayers import ScoreDisplayer, NextTetiomerBox, HeuresticDisplayer
 from random     import shuffle
-from agent_grad       import GradAi
-from agent_evolution  import EvolutionAi
-from agent_nnetwork   import NeuralEvolutionAi
-from agent_pso        import PSOAi
-from agent_rlearning  import ReinforcmentLearning
-from agent_rnetwork   import ReinforcmentNetwork
+from Libraries.Agents.agent_grad       import GradAi
+from Libraries.Agents.agent_evolution  import EvolutionAi
+from Libraries.Agents.agent_nnetwork   import NeuralEvolutionAi
+from Libraries.Agents.agent_pso        import PSOAi
+from Libraries.Agents.agent_rlearning  import ReinforcmentLearning
+from Libraries.Agents.agent_rnetwork   import ReinforcmentNetwork
 
 class TetrisGrid:
     grid = []

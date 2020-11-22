@@ -1,6 +1,6 @@
 import pygame
 
-from consts import *
+from Libraries.consts import *
 
 class GridCell:
     screen = None

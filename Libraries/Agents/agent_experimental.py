@@ -1,7 +1,7 @@
 
-from neural_network    import NeuralNetwork
-from tetiomers         import O,L,N,Z,T,I,J
-from consts            import get_color, Colors
+from Libraries.Algoritms.neural_network    import NeuralNetwork
+from Libraries.Structures.tetiomers         import O,L,N,Z,T,I,J
+from Libraries.consts            import get_color, Colors
 from handler_structure import MultidimensionalDictionary
 from tetris            import TetrisGrid 
 
@@ -11,10 +11,10 @@ import copy
 import datetime
 import pprint
 
-from vector import Vector
+from Libraries.vector import Vector
 from random import uniform, randint
 
-from consts    import *
+from Libraries.consts    import *
 
 class PredifinedLearning:
     set_of_moves = None

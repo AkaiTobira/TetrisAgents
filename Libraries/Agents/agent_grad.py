@@ -3,10 +3,10 @@ import math
 import copy
 import datetime
 
-from vector import Vector
+from Libraries.vector import Vector
 from random import uniform, randint
 
-from consts    import *
+from Libraries.consts    import *
 
 class GradAi:
     current_values = None

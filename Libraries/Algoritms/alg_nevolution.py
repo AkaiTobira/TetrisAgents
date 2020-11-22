@@ -1,7 +1,7 @@
-from neural_network import Matrix, NeuralNetwork, NeuralNetworkLayer, layer_crossover
+from Libraries.Algoritms.neural_network import Matrix, NeuralNetwork, NeuralNetworkLayer, layer_crossover
 from random import uniform, randint
 from math   import sqrt
-from consts import DATE_TIME
+from Libraries.consts import DATE_TIME
 import time
 
 class NeuralEvolution:

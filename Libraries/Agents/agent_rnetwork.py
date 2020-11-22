@@ -1,7 +1,7 @@
 
-from tetiomers         import O,L,N,Z,T,I,J
-from consts            import get_color, Colors
-from alg_nn            import NeuralNetwork
+from Libraries.Structures.tetiomers         import O,L,N,Z,T,I,J
+from Libraries.consts            import get_color, Colors
+from Libraries.Algoritms.alg_nn            import NeuralNetwork
 
 
 import pygame
@@ -10,10 +10,10 @@ import copy
 import datetime
 import keras
 
-from vector import Vector
+from Libraries.vector import Vector
 from random import uniform, randint
 
-from consts    import *
+from Libraries.consts    import *
 
 from statistics import mean, median
 #from logs import CustomTensorBoard

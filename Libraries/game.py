@@ -1,8 +1,8 @@
 import pygame
 import time
 
-from tetris      import Tetris
-from consts      import *
+from Libraries.consts            import *
+from Libraries.Structures.tetris import Tetris
 
 class Game:
     screen      = None
