@@ -62,7 +62,7 @@ class ReinforcmentLearning:
         tetromino.current_rotate =   best[1]
         tetromino.position       = [ best[2], 0 ]
 
-    def select_bestMove(self, tetromino, grid ) : 
+    def next_move(self, tetromino, grid ) : 
         if uniform(0,1) < self.cold:
             print( self.cold, " is random")
             self.cold *= 0.99

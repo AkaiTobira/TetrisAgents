@@ -1,11 +1,11 @@
 import pygame
  
 from time           import sleep
-from Libraries.game import Game
+from Libraries.game_master import GameMaster
  
 def main():
-
-	game = Game((720,860), "Tetris")
+	pygame.init()
+	game = GameMaster()
 	clock = pygame.time.Clock()
 
 	while game.is_running():

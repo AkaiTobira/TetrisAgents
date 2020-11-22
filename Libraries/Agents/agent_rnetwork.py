@@ -47,7 +47,7 @@ class ReinforcmentNetwork:
                  grid.bumpiness#+ grid.clearedRow
                 ]
 
-    def select_bestMove(self, t, grid):
+    def next_move(self, t, grid):
         if self.last_action:
             self.nn.add_to_memory( self.previous_state, self.current_state, self.rewards[self.last_action], False )
             self.rewards = {}
@@ -85,7 +85,7 @@ class ReinforcmentNetwork:
         return 0
 
 
-#    def select_bestMove(self, tetromino, grid ) : 
+#    def next_move(self, tetromino, grid ) : 
 #        state = [ grid.maxColumn, 
 #                grid.sumHeight, 
 #                grid.sumHoles , 

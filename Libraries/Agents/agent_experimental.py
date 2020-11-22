@@ -162,7 +162,7 @@ class PredifinedLearning:
         tetromino.current_rotate =   best[1]
         tetromino.position       = [ best[2], 0 ]
 
-    def select_bestMove(self, tetromino, grid ) : 
+    def next_move(self, tetromino, grid ) : 
         self.select_move( tetromino, grid)
 
     #    print( tetromino.position, tetromino.current_rotate, type(tetromino) )

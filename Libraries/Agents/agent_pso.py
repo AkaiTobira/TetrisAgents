@@ -32,7 +32,7 @@ class PSOAi:
                  grid.bumpiness * self.current_values[3] + grid.clearedRow
                  )
 
-    def select_bestMove(self, t, grid):
+    def next_move(self, t, grid):
 
         best = [ -9999999.0, t.get_position_range()[0], 0]
         for j in range(0, t.max_rotate):

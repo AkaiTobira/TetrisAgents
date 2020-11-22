@@ -35,7 +35,7 @@ class NeuralNetworkAi:
                     while( tetromino.current_rotate != i): tetromino.rotate_left()
                     tetromino.position = [ j + tetromino.get_position_range()[0], tetromino.position[1] ]
 
-    def select_bestMove(self, tetromino, grid ) : 
+    def next_move(self, tetromino, grid ) : 
     #    print(  self.__convert_grid_to_binary(grid) + self.__convert_tetromino_to_array(tetromino)  )
         self.__interpret_output( tetromino, self.nn.fit( self.__convert_grid_to_binary(grid) + self.__convert_tetromino_to_array(tetromino) ) )
         return 0
@@ -82,7 +82,7 @@ class NeuralEvolutionAi:
                     while( tetromino.current_rotate != i): tetromino.rotate_left()
                     tetromino.position = [ j + tetromino.get_position_range()[0], tetromino.position[1] ]
 
-    def select_bestMove(self, tetromino, grid ) :
+    def next_move(self, tetromino, grid ) :
         enviroment = self.__convert_grid_to_binary(grid) + self.__convert_tetromino_to_array(tetromino)        
         self.__interpret_output( tetromino, self.current_net.fit( enviroment ) )
 

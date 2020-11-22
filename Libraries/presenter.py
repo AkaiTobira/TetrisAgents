@@ -4,12 +4,11 @@ import time
 from Libraries.consts                import *
 from Libraries.Structures.tetrisGame import Tetris
 
-class Game:
+class Presenter:
     screen      = None
     resolution  = None
     
     def __init_pygame(self, resolution, name):
-
         pygame.display.set_caption(name)
         self.screen = pygame.display.set_mode(resolution)
     

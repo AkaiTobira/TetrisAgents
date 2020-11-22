@@ -4,13 +4,7 @@ from Libraries.Structures.tetiomers  import *
 from Libraries.Structures.grid_cell  import GridCell
 from Libraries.consts     import *
 from Libraries.Structures.displayers import ScoreDisplayer, NextTetiomerBox, HeuresticDisplayer
-from random     import shuffle
-from Libraries.Agents.agent_grad       import GradAi
-from Libraries.Agents.agent_evolution  import EvolutionAi
-from Libraries.Agents.agent_nnetwork   import NeuralEvolutionAi
-from Libraries.Agents.agent_pso        import PSOAi
-from Libraries.Agents.agent_rlearning  import ReinforcmentLearning
-from Libraries.Agents.agent_rnetwork   import ReinforcmentNetwork
+from Libraries.Structures.tetrominoSpawner import RandomSpawnTetromino
 
 class TetrisGrid:
     grid = []
@@ -127,33 +121,6 @@ class TetrisGrid:
 import math
 import time
 
-ROW_MULTIPLER = 1000000
-
-class RandomSpawnTetromino:
-    c_tetromino = None
-    n_tetromino = None
-
-    tetrominos = [ O(), N(),  Z(), T(), J(), L(),I()]
-    index       = 0
-
-    def __init__(self):
-        shuffle(self.tetrominos)
-        self.c_tetromino = self.tetrominos[0]
-        self.n_tetromino = self.tetrominos[1]
-        self.index       = 1
-
-    def increment_index(self):
-        self.index = (self.index+1) % 7
-
-    def get_next(self):
-        self.c_tetromino = self.n_tetromino
-        self.increment_index()
-        self.n_tetromino = self.tetrominos[self.index]
-        
-        if self.index == 0:
-            #self.tetrominos = [O(),O(),O(),O(),O(),O(),O()]
-            self.tetrominos = [ O(), N(),  Z(), T(), J(), L(), I()]
-            shuffle(self.tetrominos)
 
 class TetrisLogic:
     logic_grid      = None
@@ -210,40 +177,53 @@ class TetrisDisplayers:
     color  = get_color(Colors.LIGHT_PURPLE)
     points = None
     future = None
-    heures = None
     grid   = None
 
-    def __init__(self, screen):
+    grid_position = [0, 0]
+
+    enable_draw = True
+
+    def __init__(self, screen, position):
+        self.grid_position = position
+
         self.screen = screen
         self.points = ScoreDisplayer    (screen, [ (GRID_WIDTH + 1) * SQUARE_SIZE + GRID_HEIGHT , SQUARE_SIZE + GRID_HEIGHT  ])
         self.future = NextTetiomerBox   (screen, [ (GRID_WIDTH + 1) * SQUARE_SIZE + GRID_HEIGHT , GRID_WIDTH/2 * SQUARE_SIZE ])
-        self.heures = HeuresticDisplayer(screen, [ (GRID_WIDTH + 1) * SQUARE_SIZE + GRID_HEIGHT , (GRID_WIDTH/2  + 6) * SQUARE_SIZE ])
+        #self.heures = HeuresticDisplayer(screen, [ (GRID_WIDTH + 1) * SQUARE_SIZE + GRID_HEIGHT , (GRID_WIDTH/2  + 6) * SQUARE_SIZE ])
 
-        self.grid       = []
+        self.grid = []
         for i in range(GRID_WIDTH):
             for j in range(GRID_HEIGHT):
-                self.grid.append( GridCell( screen , ( (i * SQUARE_SIZE) + OFFSET, (j * SQUARE_SIZE) + OFFSET )))
+                self.grid.append( GridCell( screen , ( (i * SQUARE_SIZE) + self.grid_position[0], (j * SQUARE_SIZE) + self.grid_position[1] )))
 
     def drawGrid(self):
         for i in range(GRID_WIDTH*GRID_HEIGHT):
-            self.grid[i].draw()
-        pygame.draw.rect(self.screen, self.color, [ OFFSET/2 + 6, OFFSET/2 +6 , (GRID_WIDTH * SQUARE_SIZE), (GRID_HEIGHT * SQUARE_SIZE) ], 2)	
+            self.grid[i].draw()	
+        pygame.draw.rect(self.screen, self.color, [ self.grid_position[0], self.grid_position[1], (GRID_WIDTH * SQUARE_SIZE), (GRID_HEIGHT * SQUARE_SIZE) ], 2)	
+
 
     def draw(self):
+        if not self.enable_draw: return 
         self.future.draw()
         self.points.draw()
-        self.heures.draw()
+    #    self.heures.draw()
+
+    def process(self, event):
+        if event.type == pygame.KEYUP:
+            if event.key == AppKeys.SwichVisibility:
+                self.enable_draw = not self.enable_draw
 
     def _convert_index(self, i, j):
         return i * GRID_HEIGHT + j
 
     def synchronize_grid(self, grid):
+        if not self.enable_draw : return
         for i in range(GRID_WIDTH):
             for j in range(GRID_HEIGHT):
                 self.grid[self._convert_index(i,j)].fill_cell(grid[i][j])   
 
-    def synchronize_numbers(self, score, heuresitcs, values):
-        self.heures.process(heuresitcs , values)
+    def synchronize_numbers(self, score):
+        #self.heures.process(heuresitcs, values)
         self.points.process(score)
 
     def synchronize_tetromino(self, c_t , n_t):
@@ -260,116 +240,4 @@ class TetrisDisplayers:
         for i in range(shape_size[0], shape_size[2], 1):
             for j in range(shape_size[1], shape_size[3], 1):
                 if shape[j][i]: self.grid[self._convert_index(pos[0] + i, pos[1] + j)].fill_cell( c_t.color)
-
-class Tetris:
-
-    score  = 0
-    screen = None
-
-    time_to_drop = 0.0
-    drop_time    = 0.5
-
-    spawner    = None
-    logic      = None
-    displayers = None
-
-    enable_draw = True
-
-    player_index  = 0
-    players       = [ None,       EvolutionAi(), GradAi(),   PSOAi(),    ReinforcmentNetwork()] #NeuralEvolutionAi(), ReinforcmentLearning()]#, PredifinedLearning() ]
-    players_keys  = [ pygame.K_1, pygame.K_2,    pygame.K_3, pygame.K_4, pygame.K_5           ] #pygame.K_5,          pygame.K_6,           ]#  pygame.K_7]
-
-    number_of_tetrominos = 0
-
-    def __init__(self, screen):
-        self.spawner    = RandomSpawnTetromino()
-        self.logic      = TetrisLogic()
-        self.displayers = TetrisDisplayers(screen)
-        self.reset()
-
-
-    def reset(self):
-        self.number_of_tetrominos = 0
-        self.score  = 0
-        self.spawner.get_next()
-        self.logic.reset() 
-
-    def draw(self):
-        self.displayers.drawGrid()
-        if self.enable_draw : 
-            self.displayers.draw()
-
-    def update(self, delta):
-        self.displayers.synchronize_grid( self.logic.get_grid() )
-        if self.enable_draw :
-            self.displayers.synchronize_tetromino( self.spawner.c_tetromino, self.spawner.n_tetromino )
-
-        self.time_to_drop += delta
-        if self.time_to_drop > self.drop_time:
-            if self.player_index == 0 : self.update_human_player()
-            else : self.train_Ai()
-            self.time_to_drop = 0.0
-
-    def train_Ai(self):
-        if not self.logic.progress_tetromino(self.spawner.c_tetromino):
-            self.spawner.get_next()
-            self.number_of_tetrominos += 1
-            self.logic.score += self.players[self.player_index].select_bestMove(self.spawner.c_tetromino, self.logic.get_grid())* ROW_MULTIPLER
-            self.score = self.logic.score
-            if self.enable_draw : self.displayers.synchronize_numbers(self.score, [0,0,0,0,0,0,0], [1,1,1,1] )
-        if self.logic.game_over() or self.number_of_tetrominos > 5000 :
-            self.players[self.player_index].set_score(self.score, self.number_of_tetrominos)    
-            self.reset()
-
-    def update_human_player(self):
-        if not self.logic.progress_tetromino(self.spawner.c_tetromino):
-            self.spawner.get_next()
-            self.score = self.logic.score
-            if self.enable_draw : self.displayers.synchronize_numbers(self.score, [0,0,0,0,0,0,0], [1,1,1,1] )
-        if self.logic.game_over(): self.reset()
-
-    def process( self, event):
-        if event.type == pygame.KEYUP:
-            if event.key == pygame.K_q:
-                self.enable_draw = not self.enable_draw
-                return
-
-            for key_i in range(len(self.players_keys)):
-                if event.key == self.players_keys[key_i]:
-                    self.reset()
-                    self.drop_time    = 1.0
-                    self.player_index = key_i
-                    if self.players[self.player_index]:
-                        self.drop_time    = 0.0
-                        self.players[self.player_index].select_bestMove(self.spawner.c_tetromino, self.logic.get_grid())
-                        return
-                        
-            if event.key == pygame.K_z:
-                self.drop_time = 0.0
-            if event.key == pygame.K_p:
-                self.drop_time = 100000
-            if event.key == pygame.K_x:
-                self.drop_time = 1.0
-
-        if event.type == pygame.KEYUP:
-            if event.key == pygame.K_DOWN:
-                self.logic.rotate_left(self.spawner.c_tetromino)
-                return
-            
-            if event.key == pygame.K_UP:
-                self.logic.rotate_right(self.spawner.c_tetromino)
-                return
-
-            if event.key == pygame.K_RIGHT:
-                self.logic.move_right(self.spawner.c_tetromino)    
-                return
-            
-            if event.key == pygame.K_LEFT:
-                self.logic.move_left(self.spawner.c_tetromino)
-                return
-
-            if event.key == pygame.K_SPACE:
-                self.logic.drop(self.spawner.c_tetromino)
-                #self.spawner.get_next()
-                return
 

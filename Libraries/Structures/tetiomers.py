@@ -81,6 +81,7 @@ class O(Tetromino):
 
     def __init__(self):
         Tetromino.__init__(self)
+        self.m_id = 1
         self.position        = [0,0] 
         self.can_rotate = False
         self.shape[0]  = [ [ 1, 1, 0, 0],
@@ -96,6 +97,7 @@ class T(Tetromino):
 
     def __init__(self):
         Tetromino.__init__(self)
+        self.m_id = 2
         self.position        = [0,0] 
 
 
@@ -138,6 +140,7 @@ class J(Tetromino):
     
     def __init__(self):
         Tetromino.__init__(self)
+        self.m_id = 3
         self.position        = [0,0] 
 
 
@@ -181,6 +184,7 @@ class L(Tetromino):
     
     def __init__(self):
         Tetromino.__init__(self)
+        self.m_id = 4
         self.position        = [0,0] 
 
         self.shape[0] = [ [1, 0, 0, 0],
@@ -224,6 +228,7 @@ class Z(Tetromino):
     
     def __init__(self):
         Tetromino.__init__(self)
+        self.m_id = 5
         self.position        = [0,0] 
         self.shape[0] = [ [ 0, 0, 0, 0 ],
                           [ 1, 1, 0, 0 ],
@@ -248,6 +253,7 @@ class I(Tetromino):
     
     def __init__(self):
         Tetromino.__init__(self)
+        self.m_id = 6
         self.position        = [0,0] 
         self.shape[0] = [ [ 0, 0, 0, 0 ],
                           [ 1, 1, 1, 1 ],
@@ -282,6 +288,7 @@ class N(Tetromino):
     
     def __init__(self):
         Tetromino.__init__(self)
+        self.m_id = 7
         self.position        = [0,0] 
         self.shape[0] = [ [ 0, 0, 0, 0 ],
                           [ 0, 1, 1, 0 ],

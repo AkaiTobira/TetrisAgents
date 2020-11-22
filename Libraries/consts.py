@@ -4,6 +4,9 @@ GRID_HEIGHT = 22
 GRID_WIDTH  = 10
 FONT_SIZE   = 26
 NUM_OF_EPOCh= 150
+ROW_MULTIPLER = 1000000
+MAX_NUMBER_PER_GAME = 5000
+import pygame
 
 from enum import Enum
 
@@ -12,6 +15,14 @@ POINT_DISTANCE = 25
 import datetime
 DATE_TIME = datetime.datetime.now()
 DATE_TIME = str(DATE_TIME.year) + str(DATE_TIME.month) + str(DATE_TIME.day) + "_" + str(DATE_TIME.hour) + str(DATE_TIME.minute) + str(DATE_TIME.second)
+
+class AppKeys(Enum):
+	ChangeScreen = pygame.K_F1,
+
+import collections
+_KeysTuple = collections.namedtuple('AppKeys', 
+                        ['ChangeScreen', "SetTimerInfinity", "SetTimerZero", "SetTimerOne", "RotateLeft", "RotateRight",   "MoveRight",    "MoveLeft",  "DropDown", "SwichVisibility"])
+AppKeys = _KeysTuple(      pygame.K_F1 ,        pygame.K_z ,    pygame.K_p ,   pygame.K_x, pygame.K_DOWN,  pygame.K_UP, pygame.K_RIGHT, pygame.K_LEFT,   pygame.K_SPACE, pygame.K_q )
 
 class Colors(Enum):
 	LIGHT_BLUE   = 1

@@ -40,7 +40,7 @@ class GradAi:
                 if shape[j][i] and grid[pos[0] + i][ pos[1] + j] == get_color(Colors.GOLD): 
                     grid[pos[0] + i][ pos[1] + j] = get_color(Colors.BLACK)
 
-    def select_bestMove(self, t, grid):
+    def next_move(self, t, grid):
         best_move = self.gradient_descent( grid, t )
 
         t.current_rotate =   best_move[1]

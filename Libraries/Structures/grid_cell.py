@@ -10,8 +10,8 @@ class GridCell:
 
     m_id   = 0
     def __init__(self, screen, center):
-        self.m_id        = int((center[0] - OFFSET)/SQUARE_SIZE * GRID_HEIGHT + (center[1] - OFFSET)/SQUARE_SIZE)
-        self.rect        = pygame.Rect(  SQUARE_SIZE/2, SQUARE_SIZE/2, SQUARE_SIZE,   SQUARE_SIZE )
+        self.m_id        = int((center[0])/SQUARE_SIZE * GRID_HEIGHT + (center[1] )/SQUARE_SIZE)
+        self.rect        = pygame.Rect(  SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE,   SQUARE_SIZE )
         self.screen      = screen
         self.rect.center = center
 
