@@ -18,6 +18,8 @@ class PlymodeController:
         self.learning_modes = {
             pygame.K_1 : HumanPlayer(),
             pygame.K_2 : EvolutionAi(),
+            pygame.K_3 : PSOAi(),
+            pygame.K_4 : ReinforcmentNetwork(),
         }
 
     def get_player(self, playerIndex):

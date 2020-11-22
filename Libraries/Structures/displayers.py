@@ -2,6 +2,7 @@ import pygame
 
 from Libraries.consts    import *
 from Libraries.Structures.grid_cell import GridCell
+from Libraries.Structures.fps_counter import FPSCounter
 
 class DisplayerBase:
     screen   = None
@@ -30,6 +31,31 @@ class DisplayerBase:
 
     def draw(self, smt):
         pass
+
+class FPSDisplayer:
+    screen   = None
+    color    = get_color(Colors.WHITE)
+    position = None
+    counter  = FPSCounter()
+
+    size     = FONT_SIZE
+
+    def __init__(self, screen, position):
+        self.screen   = screen
+        self.position = position
+
+    def update(self, delta):
+        self.counter.update(delta)
+
+    def draw_text(self, size =0):
+        if size == 0 :
+            font = pygame.font.SysFont("consolas", self.size)
+        else:
+            font = pygame.font.SysFont("consolas", size)
+    
+        text = font.render("FPS:" + self.counter.getFPS(), True, self.color)
+        text_rect = text.get_rect(center=(self.position[0], self.position[1]))
+        self.screen.blit(text, text_rect) 
 
 class ScoreDisplayer(DisplayerBase):
 

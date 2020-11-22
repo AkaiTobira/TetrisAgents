@@ -5,7 +5,7 @@ import enum
 from Libraries.Structures.tetrisGame import Tetris
 from Libraries.game import Game
 from Libraries.presenter import Presenter
-from Libraries.consts            import *
+from Libraries.consts    import *
 
 class GameState(Enum):
     LearningApp = 1,
@@ -13,12 +13,14 @@ class GameState(Enum):
 
 class GameMaster:
     activeApp    = None
+    inactiveApp  = None
     activeState  = GameState.LearningApp
     running      = True
 
     def __init__(self):
         pygame.mouse.set_visible(False)
-        self.activeApp    = Game((720,860), "Tetris")
+        self.inactiveApp  = Presenter((1300,860), "Tetris")
+        self.activeApp    = Game((250,860), "Tetris")
 
     def process(self):
         while True:
@@ -41,15 +43,19 @@ class GameMaster:
     def draw(self,):
         self.activeApp.draw()
 
+
     def is_running(self):
         return self.running
 
     def change_app(self):
         if self.activeState == GameState.LearningApp:
             self.activeState = GameState.PresentingApp
-            self.activeApp = Presenter((1302,860), "Tetris")
 
         elif self.activeState == GameState.PresentingApp:
             self.activeState = GameState.LearningApp
-            self.activeApp = Game((720,860), "Tetris")
             
+        temp = self.activeApp
+        self.activeApp = self.inactiveApp
+        self.inactiveApp = temp
+
+        self.activeApp.reset_resolution()

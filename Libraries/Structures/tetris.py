@@ -187,8 +187,8 @@ class TetrisDisplayers:
         self.grid_position = position
 
         self.screen = screen
-        self.points = ScoreDisplayer    (screen, [ (GRID_WIDTH + 1) * SQUARE_SIZE + GRID_HEIGHT , SQUARE_SIZE + GRID_HEIGHT  ])
-        self.future = NextTetiomerBox   (screen, [ (GRID_WIDTH + 1) * SQUARE_SIZE + GRID_HEIGHT , GRID_WIDTH/2 * SQUARE_SIZE ])
+        self.points = ScoreDisplayer    (screen, [ position[0], position[1] + GRID_HEIGHT * SQUARE_SIZE  ])
+        self.future = NextTetiomerBox   (screen, [ position[0], position[1] + GRID_HEIGHT * SQUARE_SIZE + GRID_WIDTH/2 * SQUARE_SIZE ])
         #self.heures = HeuresticDisplayer(screen, [ (GRID_WIDTH + 1) * SQUARE_SIZE + GRID_HEIGHT , (GRID_WIDTH/2  + 6) * SQUARE_SIZE ])
 
         self.grid = []
@@ -197,9 +197,10 @@ class TetrisDisplayers:
                 self.grid.append( GridCell( screen , ( (i * SQUARE_SIZE) + self.grid_position[0], (j * SQUARE_SIZE) + self.grid_position[1] )))
 
     def drawGrid(self):
+        if not self.enable_draw: return
         for i in range(GRID_WIDTH*GRID_HEIGHT):
             self.grid[i].draw()	
-        pygame.draw.rect(self.screen, self.color, [ self.grid_position[0], self.grid_position[1], (GRID_WIDTH * SQUARE_SIZE), (GRID_HEIGHT * SQUARE_SIZE) ], 2)	
+    #    pygame.draw.rect(self.screen, self.color, [ self.grid_position[0] - OFFSET, self.grid_position[1] - OFFSET, (GRID_WIDTH * SQUARE_SIZE), (GRID_HEIGHT * SQUARE_SIZE) ], 2)	
 
 
     def draw(self):

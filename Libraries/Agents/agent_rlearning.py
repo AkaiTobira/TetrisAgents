@@ -62,7 +62,9 @@ class ReinforcmentLearning:
         tetromino.current_rotate =   best[1]
         tetromino.position       = [ best[2], 0 ]
 
-    def next_move(self, tetromino, grid ) : 
+
+    def next_move(self, t, grid, _unused):
+        grid = grid.get_grid()
         if uniform(0,1) < self.cold:
             print( self.cold, " is random")
             self.cold *= 0.99
@@ -81,7 +83,7 @@ class ReinforcmentLearning:
 
         return score
 
-    def set_score(self, score, number_of_tetrominos):
+    def game_over_feedback(self, score, number_of_tetrominos):
         if score < 1000: self.cold = 0.5
         #self.cold = min( self.cold * 2, 0.5 ) 
         pass

@@ -47,7 +47,8 @@ class ReinforcmentNetwork:
                  grid.bumpiness#+ grid.clearedRow
                 ]
 
-    def next_move(self, t, grid):
+    def next_move(self, t, grid, _unsed):
+        grid = grid.get_grid()
         if self.last_action:
             self.nn.add_to_memory( self.previous_state, self.current_state, self.rewards[self.last_action], False )
             self.rewards = {}
@@ -94,7 +95,7 @@ class ReinforcmentNetwork:
 #        print( state, reward )
 #        return 0
 
-    def set_score(self, score, cleaned):
+    def game_over_feedback(self, score, cleaned):
         self.nn.add_to_memory( self.previous_state, self.current_state, self.rewards[self.last_action], True )
         self.rewards        = {}
         self.previous_state = [0,0,0,0]

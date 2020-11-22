@@ -5,7 +5,7 @@ from Libraries.consts import *
 class GridCell:
     screen = None
     rect   = None
-    color  = get_color(Colors.KHAKI)
+    color  = get_color(Colors.LIGHT_PURPL2)
     fill   = get_color(Colors.BLACK)
 
     m_id   = 0

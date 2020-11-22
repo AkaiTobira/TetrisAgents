@@ -32,8 +32,8 @@ class PSOAi:
                  grid.bumpiness * self.current_values[3] + grid.clearedRow
                  )
 
-    def next_move(self, t, grid):
-
+    def next_move(self, t, grid, _unused):
+        grid = grid.get_grid()
         best = [ -9999999.0, t.get_position_range()[0], 0]
         for j in range(0, t.max_rotate):
             for i in range( t.get_position_range()[0], t.get_position_range()[1] + 1):
@@ -46,6 +46,6 @@ class PSOAi:
         t.position       = [ best[1], 0 ]
         return 0
 
-    def set_score(self, score, cleaned): 
+    def game_over_feedback(self, score, cleaned): 
     #    self.pso_alg.add_score(score, cleaned)
         self.current_values = self.pso_alg.get_next_to_check(score, cleaned)

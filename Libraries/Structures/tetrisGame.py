@@ -25,11 +25,11 @@ class Tetris:
 
     number_of_tetrominos = 0
 
-    def __init__(self, screen):
+    def __init__(self, screen, position):
         self.spawner          = RandomSpawnTetromino()
         self.logic            = TetrisLogic()
         self.players_controll = PlymodeController()
-        self.displayers       = TetrisDisplayers(screen, [OFFSET/2 + 6, OFFSET/2 +6])
+        self.displayers       = TetrisDisplayers(screen, position )
         self.flow_controll    = TimerController(self.players_controll)
         self.reset()
 
@@ -41,13 +41,13 @@ class Tetris:
 
     def draw(self):
         self.displayers.drawGrid()
-        if self.enable_draw : 
-            self.displayers.draw()
+        self.displayers.draw()
 
     def update(self, delta):
         self.displayers.synchronize_grid(self.logic.get_grid())
         self.displayers.synchronize_tetromino( self.spawner.c_tetromino, self.spawner.n_tetromino )
         self.displayers.synchronize_numbers( self.score )
+
 
         self.drop_time = self.flow_controll.getTimeDelay()
 
@@ -55,6 +55,11 @@ class Tetris:
         if self.time_to_drop > self.drop_time:
             self.update_board()
             self.time_to_drop -= self.drop_time
+
+        if self.players_controll.is_AI_Player():
+            self.logic.score += self.players_controll.get_active_player().next_move(self.spawner.c_tetromino, self.logic, None) * ROW_MULTIPLER
+            self.logic.drop(self.spawner.c_tetromino)
+
 
     def update_board(self):
         if not self.logic.progress_tetromino(self.spawner.c_tetromino):
@@ -70,6 +75,7 @@ class Tetris:
         self.players_controll.process(event)
         self.displayers.process(event)
 
-        self.logic.score += self.players_controll.get_active_player().next_move(self.spawner.c_tetromino, self.logic, event) * ROW_MULTIPLER
+        if not self.players_controll.is_AI_Player():
+            self.logic.score += self.players_controll.get_active_player().next_move(self.spawner.c_tetromino, self.logic, event) * ROW_MULTIPLER
 
 
