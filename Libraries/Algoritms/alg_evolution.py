@@ -126,7 +126,6 @@ class EvolutionAlgoritm:
 			
 	def fit(self):
 		self.moves.write(" FIT CALLED " + "\n")
-		print(" FIT CALLED ")
 		new_generation = 0
 		self.sort()
 

@@ -18,6 +18,13 @@ class PSOAi:
     def try_fit(self, x_pos, t, grid):
         t.position[0] = x_pos
 
+
+        mins = max( x_pos, 0)
+        maxs = min( x_pos + 4, GRID_WIDTH)
+        importantHeights = grid.heights[mins: maxs]
+        pos_y = max( math.fabs(GRID_HEIGHT - max( importantHeights )) - 4, 0 )
+        t.position[1] = int(pos_y)
+
         while True:
             t.position[1] += 1
             if not t.is_valid(grid):
