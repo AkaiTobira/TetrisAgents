@@ -62,8 +62,7 @@ class Tetromino:
     def get_position_range(self):
         return self.position_range
 
-    def copy(self):
-        return copy.copy(self)
+
 
     def is_valid(self, grid):
         #fall test
@@ -92,6 +91,9 @@ class O(Tetromino):
         self.color = get_color(Colors.LIGHT_BLUE)
         self.enabled_size   = [0,0,2,2]
         self.position_range = [0,GRID_WIDTH - self.enabled_size[2]]
+
+    def copy(self):
+        return O()
 
 class T(Tetromino):
 
@@ -136,6 +138,9 @@ class T(Tetromino):
         if self.current_rotate == 0: return [0,0,3,2] 
         return self.enabled_size
 
+    def copy(self):
+        return T()
+
 class J(Tetromino):
     
     def __init__(self):
@@ -179,6 +184,9 @@ class J(Tetromino):
         if self.current_rotate == 0: return [0,0,3,2] 
     #    if self.current_rotate == 2: return [0,0,2,3] 
         return self.enabled_size
+    
+    def copy(self):
+        return J()
 
 class L(Tetromino):
     
@@ -224,6 +232,9 @@ class L(Tetromino):
         if self.current_rotate == 0: return [0,0,3,2] 
         return self.enabled_size
 
+    def copy(self):
+        return L()
+
 class Z(Tetromino):
     
     def __init__(self):
@@ -248,6 +259,10 @@ class Z(Tetromino):
     def get_position_range(self):
         if self.current_rotate == 1 : return [-1,GRID_WIDTH - self.enabled_size[2]]  
         return self.position_range
+
+
+    def copy(self):
+        return Z()
 
 class I(Tetromino):
     
@@ -284,6 +299,10 @@ class I(Tetromino):
         if self.current_rotate == 2: return [0,0,4,3] 
         return self.enabled_size
 
+
+    def copy(self):
+        return I()
+
 class N(Tetromino):
     
     def __init__(self):
@@ -308,6 +327,9 @@ class N(Tetromino):
     def get_position_range(self):
         if self.current_rotate == 1 : return [-1,GRID_WIDTH - self.enabled_size[2]]  
         return self.position_range
+
+    def copy(self):
+        return N()
 
 class Tetrominos(Enum):
     O = O()

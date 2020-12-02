@@ -3,6 +3,7 @@ from math   import sqrt
 from Libraries.vector import Vector
 import time
 from Libraries.consts import DATE_TIME
+from Libraries.Structures.best_saver import instance, BestUnitSaver
 
 EVOLUTION_VECTOR_DIMENSIONS = 4
 
@@ -24,6 +25,12 @@ class EvolutionAlgoritm:
 		self.population = []
 		self.unchecked_population = []
 
+		lastbest = instance.getLastBest("Evolution" + str(EVOLUTION_VECTOR_DIMENSIONS))
+		unit = Vector(EVOLUTION_VECTOR_DIMENSIONS, unit = True)
+		unit.v = lastbest[0]
+
+		#self.population.append( [unit, 0])
+
 		for i in range(self.POPULATION_SIZE):
 			self.population.append([Vector( EVOLUTION_VECTOR_DIMENSIONS, unit=True ), 0])
 
@@ -33,7 +40,7 @@ class EvolutionAlgoritm:
 	def add_score(self, score, cleaned):
 		
 		end = time.time()
-		self.unchecked_population[0][2] += score
+		self.unchecked_population[0][2] +=  score + cleaned 
 		self.moves.write( str(len( self.unchecked_population )) + "#" + str(self.unchecked_population[0][0]) + "#" + str(self.unchecked_population[0][1]) + "#" + str(self.unchecked_population[0][2]) + "#" + str((cleaned/5.0))[:5] + "%#" + str(end - self.start) + "\n" )
 		print( len( self.unchecked_population ), self.unchecked_population[0][0], self.unchecked_population[0][1], self.unchecked_population[0][2], str((cleaned/5.0))[:5] + "%" )
 		self.start = end
@@ -141,6 +148,8 @@ class EvolutionAlgoritm:
 		
 		for i in range(int(0.05*self.POPULATION_SIZE)):
 			self.unchecked_population.append([ self.POPULATION_SIZE-i-1, Vector(EVOLUTION_VECTOR_DIMENSIONS, unit=True), 0 ] )
+
+		instance.saveScore("Evolution" + str(EVOLUTION_VECTOR_DIMENSIONS), self.population[0][0], self.population[0][1] )
 
 		self.dumps.write("############################################################################################################################################\n")
 		self.dumps.write(str(self))

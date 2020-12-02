@@ -73,6 +73,9 @@ class Vector:
     def __getitem__(self, i):    return self.v[i]
     def __setitem__(self, i, c): self.v[i] = c
 
+    def __list__(self): return self.v
+
+
     def max_normalization(self):
         return (self - (max(self.v)*Vector(len(self.v)).one())) / (max(self.v) - min(self.v))
 

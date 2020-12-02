@@ -4,6 +4,8 @@ import time
 from Libraries.consts                 import *
 from Libraries.Structures.tetrisGame  import Tetris
 from Libraries.Structures.displayers  import FPSDisplayer
+from Libraries.Structures.tetrominoSpawner import RandomSpawnTetromino
+from Libraries.Structures.playerList import PlymodeController
 
 
 class Game:
@@ -23,7 +25,7 @@ class Game:
         self.name = name
         self.resolution  = resolution
         self.reset_resolution()
-        self.tetris  = Tetris(self.screen, [OFFSET/2 + 6, OFFSET/2 +6])
+        self.tetris  = Tetris(self.screen, [OFFSET/2 + 6, OFFSET/2 +6], RandomSpawnTetromino(), PlymodeController())
         self.fpsRate = FPSDisplayer (self.screen, [ OFFSET/2 + 6 + 100, OFFSET/2 +6 + (GRID_HEIGHT + 15) * SQUARE_SIZE ])
 
     def is_running(self):
@@ -31,7 +33,6 @@ class Game:
 
     def process(self, event):
         self.tetris.process(event)
-        
 
     def draw(self):
         self.screen.fill(get_color(Colors.BLACK))
@@ -40,5 +41,6 @@ class Game:
         pygame.display.flip()
 
     def update(self,  delta): 
+        if self.tetris.is_game_over: self.tetris.reset()
         self.tetris.update(delta)
         self.fpsRate.update(delta)

@@ -53,7 +53,7 @@ class FPSDisplayer:
         else:
             font = pygame.font.SysFont("consolas", size)
     
-        text = font.render("FPS:" + self.counter.getFPS(), True, self.color)
+        text = font.render("MPS:" + self.counter.getFPS(), True, self.color)
         text_rect = text.get_rect(center=(self.position[0], self.position[1]))
         self.screen.blit(text, text_rect) 
 
@@ -65,25 +65,24 @@ class ScoreDisplayer(DisplayerBase):
         DisplayerBase.__init__(self, screen, position)     
 
     def draw(self):
-        self.draw_text(   "Score", [( self.position[0] + self.size*5 ), ( self.position[1] + self.size       )]) 
-        self.draw_text( self.text, [( self.position[0] + self.size*5 ), ( self.position[1] + self.size*2 + 3 )])
+        self.draw_text(   "Score", [( self.position[0] + self.size*5 ), ( self.position[1] + self.size + 10  )], 12) 
+        self.draw_text( self.text, [( self.position[0] + self.size*5 ), ( self.position[1] + self.size + 25 )])
 
-        pygame.draw.rect(self.screen, get_color(Colors.LIGHT_PURPLE), [ self.position[0], self.position[1] , self.size*GRID_WIDTH, self.size*3 ], 2)	
+    #    pygame.draw.rect(self.screen, get_color(Colors.LIGHT_PURPLE), [ self.position[0], self.position[1] , self.size*GRID_WIDTH, self.size*2 ], 2)	
 
     def process(self, text):
         self.text = text
 
-
+#TODO optimalization
 class NextTetiomerBox(DisplayerBase):
     grid     = None
     tetiomer = None
-    CELL_GRID_HEIGHT = 3
-    CELL_GRID_WIDTH  = 4
+
 
     def _init_grid(self):
         self.grid     = []
-        for i in range(self.CELL_GRID_WIDTH):
-            for j in range(self.CELL_GRID_HEIGHT):
+        for i in CELL_GRID_WIDTH:
+            for j in CELL_GRID_HEIGHT:
                 self.grid.append( GridCell(self.screen, ( self.position[0] + (i * SQUARE_SIZE) + self.size*3,  self.position[1] + (j * SQUARE_SIZE) + self.size*3 ) ) )
 
     def __init__(self, screen, position):
@@ -96,22 +95,22 @@ class NextTetiomerBox(DisplayerBase):
     def draw(self):
         self.draw_text("Next TETROMINO", [( self.position[0] + self.size*5 ), ( self.position[1] + self.size       )]) 
         self.fill_grid(self.tetiomer)
-        for i in range(self.CELL_GRID_WIDTH*self.CELL_GRID_HEIGHT):
+        for i in CELL_GRID_BOTH:
             self.grid[i].draw()
 
         pygame.draw.rect(self.screen, get_color(Colors.LIGHT_PURPLE), [ self.position[0], self.position[1] , self.size*GRID_WIDTH, self.size*8 ], 2)
 
     def _convert_id(self,a,b):
-        return a * self.CELL_GRID_HEIGHT + b
+        return a * 3 + b
 
     def fill_grid_for_O_Tetiomer(self,t):
             shape = t.get_shape()
-            for a in range(self.CELL_GRID_WIDTH ):
-                for b in range(self.CELL_GRID_HEIGHT ):
+            for a in CELL_GRID_WIDTH:
+                for b in CELL_GRID_HEIGHT:
                     self.grid[self._convert_id(a,b)].fill_cell(get_color(Colors.BLACK))
 
-            for a in range( 1,3,1):
-                for b in range( 1,3,1):
+            for a in RANGE_1_3:
+                for b in RANGE_1_3:
                     self.grid[self._convert_id(a,b)].fill_cell(t.color)
 
     def fill_grid(self, t):
@@ -121,8 +120,8 @@ class NextTetiomerBox(DisplayerBase):
             return
 
         shape = t.get_shape()
-        for a in range(self.CELL_GRID_WIDTH ):
-            for b in range(self.CELL_GRID_HEIGHT ):
+        for a in CELL_GRID_WIDTH:
+            for b in CELL_GRID_HEIGHT:
                 if shape[b][a] : self.grid[self._convert_id(a,b)].fill_cell(t.color)
                 else: self.grid[self._convert_id(a,b)].fill_cell(get_color(Colors.BLACK))
 
@@ -134,32 +133,22 @@ class NextTetiomerBox(DisplayerBase):
 
 class HeuresticDisplayer(DisplayerBase):
 
+    grid = None
     heuristics = [0,0,0,0,0,0,0]
     values     = [1,1,1,1]
 
-    def __init__(self, screen, position):
+    def __init__(self, screen, position, grid):
         DisplayerBase.__init__(self, screen, position)     
+        self.grid = grid
 
-    def process(self, heuristics, values):
-        self.heuristics = heuristics
-        self.values     = values
 
     def draw(self):
-        heights  = "H : "
-        heurVals = "Holes :" + str(self.heuristics[1]) + " H_sum :" + str(self.heuristics[2]) + " Bump :" + str(self.heuristics[3])
-        for h in self.heuristics:
-            heights += str(h) + " "
+      
+        restValues = str(self.grid.sumHeight) + ", " +str(self.grid.bumpiness) + ", " + str(self.grid.sumHoles) + ", " + str(self.grid.maxColumn) + ", " +str(self.grid.clearedRow) 
 
-        t1 = "Hole rate :" + str(round(self.values[0], 3)) 
-        t2 = "Sum rate  :" + str(round(self.values[1], 3))
-        t3 = "Bump rate :" + str(round(self.values[2], 3)) 
-        t4 = "Row rate  :" + str(round(self.values[3], 3))
+        self.draw_text( self.grid.heights , [( self.position[0] + self.size*5 ), ( self.position[1] + self.size    )], 9)
+        self.draw_text( self.grid.holes , [( self.position[0] + self.size*5 ), ( self.position[1] + self.size + 9)], 9)
+        self.draw_text( restValues , [( self.position[0] + self.size*5 ), ( self.position[1] + self.size + 18)], 9)
+        
 
-        self.draw_text( heights , [( self.position[0] + self.size*5 ), ( self.position[1] + self.size       )], 12) 
-        self.draw_text( heurVals, [( self.position[0] + self.size*5 ), ( self.position[1] + self.size*2 + 3 )], 16)
-        self.draw_text( t1, [( self.position[0] + self.size*5 ), ( self.position[1] + self.size*3 + 3 )], 16)
-        self.draw_text( t2, [( self.position[0] + self.size*5 ), ( self.position[1] + self.size*4 + 3 )], 16)
-        self.draw_text( t3, [( self.position[0] + self.size*5 ), ( self.position[1] + self.size*5 + 3 )], 16)
-        self.draw_text( t4, [( self.position[0] + self.size*5 ), ( self.position[1] + self.size*6 + 3 )], 16)
-
-        pygame.draw.rect(self.screen, get_color(Colors.LIGHT_PURPLE), [ self.position[0], self.position[1] , self.size*GRID_WIDTH, self.size*7 ], 2)			
+        pygame.draw.rect(self.screen, get_color(Colors.LIGHT_PURPLE), [ self.position[0], self.position[1] , self.size*GRID_WIDTH, self.size*5 ], 2)			

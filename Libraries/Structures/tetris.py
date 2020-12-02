@@ -12,6 +12,8 @@ class TetrisGrid:
     heights    = [0,0,0,0,0,0,0,0,0,0]
     holes      = [0,0,0,0,0,0,0,0,0,0]
 
+
+
     clearedRow = 0
     maxColumn  = 0
     sumHeight  = 0
@@ -26,13 +28,21 @@ class TetrisGrid:
                 row.append( 0  if to_duplicate == None or to_duplicate.grid[i][j] == 0 else 99 )
             self.grid.append(row)
 
+        self.heights    = [0,0,0,0,0,0,0,0,0,0]
+        self.holes      = [0,0,0,0,0,0,0,0,0,0]
+
     def clone(self):
         t = TetrisGrid( self )
+
+        t.holes = self.holes.copy()
+        t.heights = self.heights.copy()
+
         t.clearedRow = self.clearedRow
         t.maxColumn  = self.maxColumn
         t.sumHeight  = self.sumHeight
         t.sumHoles   = self.sumHoles
         t.bumpiness  = self.bumpiness
+
         return t        
 
     def __evaluate(self, tetromino):
@@ -46,7 +56,7 @@ class TetrisGrid:
 
         for i, row in enumerate( self.grid ):
             self.holes[i] = 0
-            for j in RANGE_0_GRID_WIDTH_M1:
+            for j in RANGE_0_GRID_HEIGHT_M1:
                 if row[j] != 0 and row[j+1] == 0:
                     self.holes[i] += 1
 
@@ -140,9 +150,10 @@ class TetrisLogic:
         if not tetromino.is_valid(self.logic_grid):
             tetromino.position[1] -= 1
             self.logic_grid.lock(tetromino, tetromino.color)
-            self.score += 1
+        #    self.score += 1
             if self.logic_grid.clearedRow != 0 :
-                self.score += (2 ** ( self.logic_grid.clearedRow -1 )) * ROW_MULTIPLER
+                self.score += (2 ** ( self.logic_grid.clearedRow -1 ))
+                self.logic_grid.clearedRow = 0
             return False
         return True
 
@@ -173,6 +184,7 @@ class TetrisLogic:
             if self.logic_grid[ i ][ 1 ] != 0 : return True
         return False
 
+#TODO add chaging beetween stats and score
 class TetrisDisplayers:
     screen = None
     color  = get_color(Colors.LIGHT_PURPLE)
@@ -182,15 +194,16 @@ class TetrisDisplayers:
 
     grid_position = [0, 0]
 
-    enable_draw = True
+    enable_draw       = True
+    enable_draw_stats = True 
 
-    def __init__(self, screen, position):
+    def __init__(self, screen, position, grid):
         self.grid_position = position
 
         self.screen = screen
-        self.points = ScoreDisplayer    (screen, [ position[0], position[1] + GRID_HEIGHT * SQUARE_SIZE  ])
+        self.points = ScoreDisplayer    (screen, [ position[0], position[1] + GRID_HEIGHT * SQUARE_SIZE + 27 ])
         self.future = NextTetiomerBox   (screen, [ position[0], position[1] + GRID_HEIGHT * SQUARE_SIZE + GRID_WIDTH/2 * SQUARE_SIZE ])
-        #self.heures = HeuresticDisplayer(screen, [ (GRID_WIDTH + 1) * SQUARE_SIZE + GRID_HEIGHT , (GRID_WIDTH/2  + 6) * SQUARE_SIZE ])
+        self.heures = HeuresticDisplayer(screen, [ position[0], position[1] + GRID_HEIGHT * SQUARE_SIZE  ], grid)
 
         self.grid = []
         for i in range(GRID_WIDTH):
@@ -203,17 +216,21 @@ class TetrisDisplayers:
             self.grid[i].draw()	
     #    pygame.draw.rect(self.screen, self.color, [ self.grid_position[0] - OFFSET, self.grid_position[1] - OFFSET, (GRID_WIDTH * SQUARE_SIZE), (GRID_HEIGHT * SQUARE_SIZE) ], 2)	
 
+    def setGrid(self, grid):
+        self.heures.grid = grid 
 
     def draw(self):
         if not self.enable_draw: return 
         self.future.draw()
         self.points.draw()
-    #    self.heures.draw()
+        if self.enable_draw_stats : self.heures.draw()
 
     def process(self, event):
         if event.type == pygame.KEYUP:
             if event.key == AppKeys.SwichVisibility:
                 self.enable_draw = not self.enable_draw
+            if event.key == AppKeys.ToggleStatsDraw:
+                self.enable_draw_stats = not self.enable_draw_stats
 
     def _convert_index(self, i, j):
         return i * GRID_HEIGHT + j
@@ -224,9 +241,8 @@ class TetrisDisplayers:
             for j in range(GRID_HEIGHT):
                 self.grid[self._convert_index(i,j)].fill_cell( get_color( Colors(grid[i][j])))   
 
-    def synchronize_numbers(self, score):
-        #self.heures.process(heuresitcs, values)
-        self.points.process(score)
+    def synchronize_numbers(self, lines, tetriminos):
+        self.points.process(str(lines) + " | " + str(tetriminos))
 
     def synchronize_tetromino(self, c_t , n_t):
         self._draw_tetromino_in_grid(c_t)

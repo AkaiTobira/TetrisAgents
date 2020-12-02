@@ -7,6 +7,7 @@ from Libraries.Agents.agent_nnetwork   import NeuralEvolutionAi
 from Libraries.Agents.agent_pso        import PSOAi
 from Libraries.Agents.agent_rlearning  import ReinforcmentLearning
 from Libraries.Agents.agent_rnetwork   import ReinforcmentNetwork
+from Libraries.Structures.best_saver   import instance
 
 class PlymodeController:
     learning_modes = {}
@@ -43,8 +44,37 @@ class PlymodeController:
         return self.last_pressed_player_key != pygame.K_1
 
 
+class PresenterBotsController:
+    bots = []
+
+    def __init__( self ): 
+
+        self.bots = [    
+                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution4")) ),
+                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution4") )),
+                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution4") )),
+                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution4") )),
+                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution4") )),
+         ]
+
+    def getBotUnit( self, index ): 
+        return self.bots[index]
 
 
-#players       = [ None      ]# EvolutionAi(), GradAi(),   PSOAi(),    ReinforcmentNetwork()] #NeuralEvolutionAi(), ReinforcmentLearning()]#, PredifinedLearning() ]
-#players_keys  = [ ]#, pygame.K_2,    pygame.K_3, pygame.K_4, pygame.K_5           ] #pygame.K_5,          pygame.K_6,           ]#  pygame.K_7]
+class PresenterBotUnit:
+    playerUnit = None
+
+    def __init__( self, bot ): 
+        self.playerUnit = bot
+
+    def get_player(self, playerIndex): return self.playerUnit
+
+    def get_active_player(self): return self.playerUnit
+
+    def game_over_feedback(self, score, number_of_tetrominos): pass
+
+    def process(self, event): pass
+    
+    def is_AI_Player(self): return True
+
 
