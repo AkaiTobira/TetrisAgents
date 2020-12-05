@@ -5,8 +5,8 @@ GRID_WIDTH  = 10
 FONT_SIZE   = 19
 NUM_OF_EPOCh= 150
 ROW_MULTIPLER = 100000000000
-MAX_NUMBER_PER_GAME = 50000
-NUMBER_OF_SCREENS = 2
+MAX_NUMBER_PER_GAME = 20000
+NUMBER_OF_SCREENS = 5
 
 RANGE_0_GRID_WIDTH     = range(0, GRID_WIDTH)
 RANGE_0_GRID_HEIGHT    = range(0, GRID_HEIGHT)
@@ -24,7 +24,7 @@ POINT_DISTANCE = 25
 
 import datetime
 DATE_TIME = datetime.datetime.now()
-DATE_TIME = str(DATE_TIME.year) + str(DATE_TIME.month) + str(DATE_TIME.day) + "_" + str(DATE_TIME.hour) + str(DATE_TIME.minute) + str(DATE_TIME.second)
+DATE_TIME =  str(DATE_TIME.day) + "-" + str(DATE_TIME.month) + "-" + str(DATE_TIME.year) + "_" + str(DATE_TIME.hour) + str(DATE_TIME.minute) + str(DATE_TIME.second)
 
 import collections
 _KeysTuple = collections.namedtuple('AppKeys', 

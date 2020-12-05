@@ -1,0 +1,8 @@
+
+logs/evo/*
+logs/pso/*
+logs/grd/*
+logs/nevo/*
+logs/exp/*
+
+*/__pycache__/*

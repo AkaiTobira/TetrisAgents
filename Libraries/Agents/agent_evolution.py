@@ -1,7 +1,7 @@
 import pygame
 import math
 
-from Libraries.Algoritms.alg_evolution import EvolutionAlgoritm
+from Libraries.Algoritms.alg_evolution import EvolutionAlgoritm, EVOLUTION_VECTOR_DIMENSIONS
 from Libraries.consts        import *
 
 class EvolutionAi:
@@ -39,11 +39,27 @@ class EvolutionAi:
 
     def evaulate(self, grid):
 
-        return ( grid.maxColumn * self.current_values[0] + 
-                 grid.sumHeight * self.current_values[1] + 
-                 grid.sumHoles  * self.current_values[2] + 
-                 grid.bumpiness * self.current_values[3] #+ grid.clearedRow
-                 )
+        if EVOLUTION_VECTOR_DIMENSIONS == 4:
+            return ( grid.maxColumn * self.current_values[0] + 
+                    grid.sumHeight * self.current_values[1] + 
+                    grid.sumHoles  * self.current_values[2] + 
+                    grid.bumpiness * self.current_values[3] #+ grid.clearedRow
+                    )
+        if EVOLUTION_VECTOR_DIMENSIONS == 5:
+            return ( grid.maxColumn * self.current_values[0] + 
+                    grid.sumHeight * self.current_values[1] + 
+                    grid.sumHoles  * self.current_values[2] + 
+                    grid.bumpiness * self.current_values[3] +
+                    grid.clearedRow * self.current_values[4]
+                    )
+        if EVOLUTION_VECTOR_DIMENSIONS == 6:
+            return ( grid.maxColumn * self.current_values[0] + 
+                    grid.sumHeight * self.current_values[1] + 
+                    grid.sumHoles  * self.current_values[2] + 
+                    grid.bumpiness * self.current_values[3] +
+                    grid.clearedRow * self.current_values[4] +
+                    grid.biggestWheel * self.current_values[5]
+                    )
 
     def next_move(self, t, grid, _event):
         _grid = grid.get_grid()

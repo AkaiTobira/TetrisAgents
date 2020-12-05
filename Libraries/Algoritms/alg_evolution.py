@@ -2,67 +2,94 @@ from random import uniform, randint
 from math   import sqrt
 from Libraries.vector import Vector
 import time
-from Libraries.consts import DATE_TIME
+
+from Libraries.Structures.logger import *
+from Libraries.Structures.backupCreator import *
+from Libraries.consts import DATE_TIME, MAX_NUMBER_PER_GAME
 from Libraries.Structures.best_saver import instance, BestUnitSaver
 
-EVOLUTION_VECTOR_DIMENSIONS = 4
+EVOLUTION_VECTOR_DIMENSIONS = 5
 
 class EvolutionAlgoritm:
 	population             = []
-	POPULATION_SIZE        = 50
-	MUTATION_RATE          = 30
-	NUMBER_OF_PLAYED_GAMES = 5
+	POPULATION_SIZE        = 100
+	MUTATION_RATE          = 15
+	NUMBER_OF_PLAYED_GAMES = 3
 	curenntly_played_game  = 0
-	dumps                  = None
-	moves                  = None
 	start                  = 0
-	unchecked_population = []
+	generation             = 0 
+	unchecked_population   = []
+	dateTime               = ""
+
+	file_name_best =""
+	file_name_avg  =""
+	file_name_pop  =""
 
 	def __init__(self):
-		self.dumps = open("logs/evo/EVO_GEN_" + DATE_TIME, "w")
-		self.moves = open("logs/evo/EVO_MOV_" + DATE_TIME, "w")
 
 		self.population = []
 		self.unchecked_population = []
 
-		lastbest = instance.getLastBest("Evolution" + str(EVOLUTION_VECTOR_DIMENSIONS))
-		unit = Vector(EVOLUTION_VECTOR_DIMENSIONS, unit = True)
-		unit.v = lastbest[0]
+		#lastbest = instance.getLastBest("Evolution" + str(EVOLUTION_VECTOR_DIMENSIONS))
+		#unit = Vector(EVOLUTION_VECTOR_DIMENSIONS, unit = True)
+		#unit.v = lastbest[0]
 
 		#self.population.append( [unit, 0])
 
+		style, self.population, self.generation, self.dateTime = Backup.load_evolution(EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES)
+
+		if not style:
+			self.dateTime = DATE_TIME
+			self.createPopulation()
+		else:
+			self.fit(False)
+
+		self.register_logs(self.dateTime, style)
+
+	def createPopulation(self):
 		for i in range(self.POPULATION_SIZE):
 			self.population.append([Vector( EVOLUTION_VECTOR_DIMENSIONS, unit=True ), 0])
-
 		for i in range( self.POPULATION_SIZE):
 			self.unchecked_population.append( [ i, self.population[i][0], 0 ] )
 
+	def register_logs(self, dateTime, style):
+		self.file_name_best = "EVO" + str(EVOLUTION_VECTOR_DIMENSIONS) + "_best_change"
+		self.file_name_avg  = "EVO" + str(EVOLUTION_VECTOR_DIMENSIONS) + "_avrg_change"
+		self.file_name_pop   ="EVO" + str(EVOLUTION_VECTOR_DIMENSIONS) + "_populations"
+
+		LoggerInstance.register_log( self.file_name_best, dateTime, continueSyle=style)
+		LoggerInstance.register_log( self.file_name_avg,  dateTime, continueSyle=style)
+		LoggerInstance.register_log( self.file_name_pop,  dateTime, continueSyle=style)
+
 	def add_score(self, score, cleaned):
 		
-		end = time.time()
+		#end = time.time()
 		self.unchecked_population[0][2] +=  score + cleaned 
-		self.moves.write( str(len( self.unchecked_population )) + "#" + str(self.unchecked_population[0][0]) + "#" + str(self.unchecked_population[0][1]) + "#" + str(self.unchecked_population[0][2]) + "#" + str((cleaned/5.0))[:5] + "%#" + str(end - self.start) + "\n" )
-		print( len( self.unchecked_population ), self.unchecked_population[0][0], self.unchecked_population[0][1], self.unchecked_population[0][2], str((cleaned/5.0))[:5] + "%" )
-		self.start = end
+		#self.moves.write( str(len( self.unchecked_population )) + "#" + str(self.unchecked_population[0][0]) + "#" + str(self.unchecked_population[0][1]) + "#" + str(self.unchecked_population[0][2]) + "#" + str((cleaned/5.0))[:5] + "%#" + str(end - self.start) + "\n" )
+		print( len( self.unchecked_population ), self.unchecked_population[0][0], self.unchecked_population[0][1], self.unchecked_population[0][2], str((cleaned/MAX_NUMBER_PER_GAME * 100.0 ))[:6] + "%" )
+		#self.start = end
 
 	def get_next_active(self):
 		self.curenntly_played_game += 1
 		if self.curenntly_played_game < self.NUMBER_OF_PLAYED_GAMES:
 			return self.unchecked_population[0][1].v
 		
+		#print( self.unchecked_population )
+
 		self.replace_in_population()
 		self.curenntly_played_game = 0
 		if len(self.unchecked_population) == 0: self.fit() 
 
-		print( self.unchecked_population )
-
 		return self.unchecked_population[0][1].v
 
 	def replace_in_population(self): 
+		
+		#self.population.append([self.unchecked_population[0][1], self.unchecked_population[0][2]])
+		
 		index = self.unchecked_population[0][0]
 		if self.unchecked_population[0][2] >= self.population[index][1]: 
-			self.moves.write( "Replaced#"+ str(self.unchecked_population[0][2]) + "#" + str(self.population[index][1]) + "#" + str(index)  + "\n" )
-			print( "Replaced", self.unchecked_population[0][2], self.population[index][1], index, )
+			#self.moves.write( "Replaced#"+ str(self.unchecked_population[0][2]) + "#" + str(self.population[index][1]) + "#" + str(index)  + "\n" )
+			#print( "Replaced", self.unchecked_population[0][2], self.population[index][1], index, )
 			self.population[index] = [ self.unchecked_population[0][1], self.unchecked_population[0][2] ]
 		self.unchecked_population = self.unchecked_population[1:]
 
@@ -131,10 +158,12 @@ class EvolutionAlgoritm:
 		new_table.reverse()
 		self.population = new_table
 			
-	def fit(self):
-		self.moves.write(" FIT CALLED " + "\n")
+	def fit(self, logInfoEnabled=True):
+		#self.moves.write(" FIT CALLED " + "\n")
 		new_generation = 0
 		self.sort()
+
+		self.population = self.population[:self.POPULATION_SIZE]
 
 		while new_generation < int(0.3*self.POPULATION_SIZE) :
 			t = self.select_for_tournament()
@@ -149,11 +178,30 @@ class EvolutionAlgoritm:
 		for i in range(int(0.05*self.POPULATION_SIZE)):
 			self.unchecked_population.append([ self.POPULATION_SIZE-i-1, Vector(EVOLUTION_VECTOR_DIMENSIONS, unit=True), 0 ] )
 
+		if logInfoEnabled: 
+			self.logInfo()
+			Backup.save_evolution( self.population, self.generation, self.dateTime, self.MUTATION_RATE, self.NUMBER_OF_PLAYED_GAMES, EVOLUTION_VECTOR_DIMENSIONS)
+
+			self.generation += 1
+			print( "Generation " + str(self.generation))
+
+
+
+	def logInfo(self):
 		instance.saveScore("Evolution" + str(EVOLUTION_VECTOR_DIMENSIONS), self.population[0][0], self.population[0][1] )
 
-		self.dumps.write("############################################################################################################################################\n")
-		self.dumps.write(str(self))
-				
+		avrg = 0.0
+		for i in range( self.POPULATION_SIZE ):
+			avrg += self.population[i][1]
+		avrg /= self.POPULATION_SIZE
+
+		LoggerInstance.log( self.file_name_best, str(self.generation) + ", " + str(self.population[0][1]) + ", " + str(self.population[0][0]) )
+		LoggerInstance.log( self.file_name_avg, str(self.generation) + ", " + str(avrg))
+		LoggerInstance.log( self.file_name_pop, str(self))
+		LoggerInstance.log( self.file_name_pop, "#################################" )
+
+
+
 	def get_fittest(self):
 		f_best = self.population[self.POPULATION_SIZE-1]
 		s_best = self.population[self.POPULATION_SIZE-1]
