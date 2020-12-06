@@ -19,7 +19,7 @@ class GameMaster:
 
     def __init__(self):
         pygame.mouse.set_visible(False)
-        self.inactiveApp  = Presenter((1300,860), "Tetris")
+        self.inactiveApp  = Presenter((int(1300 * NUMBER_OF_SCREENS/5.0) ,860), "Tetris")
         self.activeApp    = Game((250,860), "Tetris")
 
     def process(self):

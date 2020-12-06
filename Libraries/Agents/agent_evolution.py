@@ -1,21 +1,23 @@
 import pygame
 import math
 
-from Libraries.Algoritms.alg_evolution import EvolutionAlgoritm, EVOLUTION_VECTOR_DIMENSIONS
+from Libraries.Algoritms.alg_evolution import EvolutionAlgoritm
 from Libraries.consts        import *
 
 class EvolutionAi:
     evolution_alg  = None
+    numberOfDimensions = 4
     isLocked = False
     current_values = [0,0,0,0]
     
     hights = [0,0,0,0,0,0,0,0,0,0]
     holes  = [0,0,0,0,0,0,0,0,0,0]
 
-    def __init__(self, predefined_values = None):
+    def __init__(self, predefined_values = None, numberOfDimenstions = 4):
         print( predefined_values )
+        self.numberOfDimensions = numberOfDimenstions
         if( predefined_values == None):
-            self.evolution_alg  = EvolutionAlgoritm()
+            self.evolution_alg  = EvolutionAlgoritm(numberOfDimenstions)
             self.current_values = self.evolution_alg.unchecked_population[0][1]
         else:
             self.isLocked = True
@@ -23,12 +25,6 @@ class EvolutionAi:
 
     def try_fit(self, x_pos, t, grid):
         t.position[0] = x_pos
-
-    #    mins = max( x_pos, 0)
-    ##    maxs = min( x_pos + 4, GRID_WIDTH)
-     #   importantHeights = grid.heights[mins: maxs]
-    #    pos_y = max( math.fabs(GRID_HEIGHT - max( importantHeights )) - 4, 0 )
-    #    t.position[1] = int(pos_y)
 
         while True:
             t.position[1] += 1
@@ -38,21 +34,20 @@ class EvolutionAi:
                 return self.evaulate(grid)
 
     def evaulate(self, grid):
-
-        if EVOLUTION_VECTOR_DIMENSIONS == 4:
-            return ( grid.maxColumn * self.current_values[0] + 
+        if self.numberOfDimensions == 4:
+            return ( grid.biggestWheel * self.current_values[0] + 
                     grid.sumHeight * self.current_values[1] + 
                     grid.sumHoles  * self.current_values[2] + 
                     grid.bumpiness * self.current_values[3] #+ grid.clearedRow
                     )
-        if EVOLUTION_VECTOR_DIMENSIONS == 5:
+        if  self.numberOfDimensions == 5:
             return ( grid.maxColumn * self.current_values[0] + 
                     grid.sumHeight * self.current_values[1] + 
                     grid.sumHoles  * self.current_values[2] + 
                     grid.bumpiness * self.current_values[3] +
-                    grid.clearedRow * self.current_values[4]
+                    grid.biggestWheel * self.current_values[4]
                     )
-        if EVOLUTION_VECTOR_DIMENSIONS == 6:
+        if  self.numberOfDimensions == 6:
             return ( grid.maxColumn * self.current_values[0] + 
                     grid.sumHeight * self.current_values[1] + 
                     grid.sumHoles  * self.current_values[2] + 

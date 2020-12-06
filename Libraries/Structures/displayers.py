@@ -149,6 +149,5 @@ class HeuresticDisplayer(DisplayerBase):
         self.draw_text( self.grid.heights , [( self.position[0] + self.size*5 ), ( self.position[1] + self.size    )], 9)
         self.draw_text( self.grid.holes , [( self.position[0] + self.size*5 ), ( self.position[1] + self.size + 9)], 9)
         self.draw_text( restValues , [( self.position[0] + self.size*5 ), ( self.position[1] + self.size + 18)], 9)
-        
 
         pygame.draw.rect(self.screen, get_color(Colors.LIGHT_PURPLE), [ self.position[0], self.position[1] , self.size*GRID_WIDTH, self.size*5 ], 2)			

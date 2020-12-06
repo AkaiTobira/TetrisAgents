@@ -8,13 +8,12 @@ from Libraries.Structures.backupCreator import *
 from Libraries.consts import DATE_TIME, MAX_NUMBER_PER_GAME
 from Libraries.Structures.best_saver import instance, BestUnitSaver
 
-EVOLUTION_VECTOR_DIMENSIONS = 5
-
 class EvolutionAlgoritm:
 	population             = []
 	POPULATION_SIZE        = 100
 	MUTATION_RATE          = 15
-	NUMBER_OF_PLAYED_GAMES = 3
+	NUMBER_OF_PLAYED_GAMES = 5
+	EVOLUTION_VECTOR_DIMENSIONS = 4
 	curenntly_played_game  = 0
 	start                  = 0
 	generation             = 0 
@@ -25,10 +24,12 @@ class EvolutionAlgoritm:
 	file_name_avg  =""
 	file_name_pop  =""
 
-	def __init__(self):
+	def __init__(self, numberOfDimensions = 4):
 
 		self.population = []
 		self.unchecked_population = []
+
+		self.EVOLUTION_VECTOR_DIMENSIONS = numberOfDimensions
 
 		#lastbest = instance.getLastBest("Evolution" + str(EVOLUTION_VECTOR_DIMENSIONS))
 		#unit = Vector(EVOLUTION_VECTOR_DIMENSIONS, unit = True)
@@ -36,7 +37,7 @@ class EvolutionAlgoritm:
 
 		#self.population.append( [unit, 0])
 
-		style, self.population, self.generation, self.dateTime = Backup.load_evolution(EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES)
+		style, self.population, self.generation, self.dateTime = Backup.load_evolution(self.EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES)
 
 		if not style:
 			self.dateTime = DATE_TIME
@@ -48,14 +49,14 @@ class EvolutionAlgoritm:
 
 	def createPopulation(self):
 		for i in range(self.POPULATION_SIZE):
-			self.population.append([Vector( EVOLUTION_VECTOR_DIMENSIONS, unit=True ), 0])
+			self.population.append([Vector( self.EVOLUTION_VECTOR_DIMENSIONS, unit=True ), 0])
 		for i in range( self.POPULATION_SIZE):
 			self.unchecked_population.append( [ i, self.population[i][0], 0 ] )
 
 	def register_logs(self, dateTime, style):
-		self.file_name_best = "EVO" + str(EVOLUTION_VECTOR_DIMENSIONS) + "_best_change"
-		self.file_name_avg  = "EVO" + str(EVOLUTION_VECTOR_DIMENSIONS) + "_avrg_change"
-		self.file_name_pop   ="EVO" + str(EVOLUTION_VECTOR_DIMENSIONS) + "_populations"
+		self.file_name_best = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_best_change"
+		self.file_name_avg  = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_avrg_change"
+		self.file_name_pop   ="EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_populations"
 
 		LoggerInstance.register_log( self.file_name_best, dateTime, continueSyle=style)
 		LoggerInstance.register_log( self.file_name_avg,  dateTime, continueSyle=style)
@@ -120,7 +121,7 @@ class EvolutionAlgoritm:
 	def crossover(self, parents):
 		sume = parents[0][2] + parents[1][2]
 
-		new_one = Vector(EVOLUTION_VECTOR_DIMENSIONS,unit=True)
+		new_one = Vector(self.EVOLUTION_VECTOR_DIMENSIONS,unit=True)
 
 		if sume == 0 : new_one = (parents[0][1] * ( 0.5 ) + parents[1][1] * (0.5))
 		else : new_one = parents[0][1] * ( parents[0][2] / sume ) + parents[1][1] * (parents[1][2]/sume)
@@ -176,11 +177,11 @@ class EvolutionAlgoritm:
 #		self.population =  self.population[0:(self.POPULATION_SIZE - int(0.3*self.POPULATION_SIZE))] + new_generation
 		
 		for i in range(int(0.05*self.POPULATION_SIZE)):
-			self.unchecked_population.append([ self.POPULATION_SIZE-i-1, Vector(EVOLUTION_VECTOR_DIMENSIONS, unit=True), 0 ] )
+			self.unchecked_population.append([ self.POPULATION_SIZE-i-1, Vector(self.EVOLUTION_VECTOR_DIMENSIONS, unit=True), 0 ] )
 
 		if logInfoEnabled: 
 			self.logInfo()
-			Backup.save_evolution( self.population, self.generation, self.dateTime, self.MUTATION_RATE, self.NUMBER_OF_PLAYED_GAMES, EVOLUTION_VECTOR_DIMENSIONS)
+			Backup.save_evolution( self.population, self.generation, self.dateTime, self.MUTATION_RATE, self.NUMBER_OF_PLAYED_GAMES, self.EVOLUTION_VECTOR_DIMENSIONS)
 
 			self.generation += 1
 			print( "Generation " + str(self.generation))
@@ -188,7 +189,7 @@ class EvolutionAlgoritm:
 
 
 	def logInfo(self):
-		instance.saveScore("Evolution" + str(EVOLUTION_VECTOR_DIMENSIONS), self.population[0][0], self.population[0][1] )
+		instance.saveScore("Evolution" + str(self.EVOLUTION_VECTOR_DIMENSIONS), self.population[0][0], self.population[0][1] )
 
 		avrg = 0.0
 		for i in range( self.POPULATION_SIZE ):

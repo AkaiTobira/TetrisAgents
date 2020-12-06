@@ -25,7 +25,7 @@ class BackupCreator:
             vec.v =  json_converted["population"][i]["values"]
             population.append( [ vec, json_converted["population"][i]["score"]] )
 
-        print("Backup Loaded")
+        print('Backups/Evo' + str(numberOfDimenstion) + ": Backup Loaded")
         return True, population, json_converted["generation"], json_converted["date_time"]
 
     def save_evolution(self, population, generation, dateTime, mutationrate, number_of_games, numberOfDimesions):

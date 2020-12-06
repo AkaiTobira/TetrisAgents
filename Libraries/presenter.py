@@ -18,8 +18,6 @@ class Presenter:
     instantRestart = False
     playModes = None
 
-
-
     def __init_pygame(self, resolution, name):
         pygame.display.set_caption(name)
         self.screen = pygame.display.set_mode(resolution)
@@ -37,7 +35,7 @@ class Presenter:
         self.fpsRate = FPSDisplayer (self.screen, [ OFFSET/2 + 6 + 100, OFFSET/2 +6 + (GRID_HEIGHT + 15) * SQUARE_SIZE ])
         self.tetrisGames = []
         for i in range( NUMBER_OF_SCREENS ):
-            self.tetrisGames.append( Tetris(self.screen, [OFFSET/2 + 6 + 250 * i, OFFSET/2 +6], self.multispawner.get_spawner(i), self.playModes.getBotUnit(i) ))
+            self.tetrisGames.append( Tetris(self.screen, [OFFSET/2 + 6 + 250 * i, OFFSET/2 +6], self.multispawner.get_spawner(i), self.playModes.getBotUnit(i), learning_mode=False ))
 
     def is_running(self):
         return self.running

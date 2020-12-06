@@ -8,6 +8,7 @@ from Libraries.Agents.agent_pso        import PSOAi
 from Libraries.Agents.agent_rlearning  import ReinforcmentLearning
 from Libraries.Agents.agent_rnetwork   import ReinforcmentNetwork
 from Libraries.Structures.best_saver   import instance
+from Libraries.consts import NUMBER_OF_SCREENS
 
 class PlymodeController:
     learning_modes = {}
@@ -18,9 +19,11 @@ class PlymodeController:
         self.switching_enabled = switch_enabled
         self.learning_modes = {
             pygame.K_1 : HumanPlayer(),
-            pygame.K_2 : EvolutionAi(),
-            pygame.K_3 : PSOAi(),
-            pygame.K_4 : ReinforcmentNetwork(),
+            pygame.K_2 : EvolutionAi(None, 4),
+            pygame.K_3 : EvolutionAi(None, 5),
+            pygame.K_4 : EvolutionAi(None, 6),
+            pygame.K_5 : PSOAi(),
+            pygame.K_6 : ReinforcmentNetwork(),
         }
 
     def get_player(self, playerIndex):
@@ -48,14 +51,14 @@ class PresenterBotsController:
     bots = []
 
     def __init__( self ): 
-
         self.bots = [    
-                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution4")) ),
-                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution4") )),
-                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution4") )),
-                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution4") )),
-                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution4") )),
-         ]
+                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution4"), 4 )),
+                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution5"), 5 )),
+                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution6"), 6 )),
+                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution6") )),
+                    PresenterBotUnit(EvolutionAi( instance.getLastBest("Evolution6") )),
+        ]
+        self.bots = self.bots[ : NUMBER_OF_SCREENS ]
 
     def getBotUnit( self, index ): 
         return self.bots[index]

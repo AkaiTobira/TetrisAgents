@@ -42,17 +42,20 @@ class Tetris:
 
     enable_draw  = True
     is_game_over = False 
+    learning_mode = True
 
     number_of_tetrominos = 0
 
 
+    AI_moveSelceted = False
 
-    def __init__(self, screen, position, spawner, playerlist):
+    def __init__(self, screen, position, spawner, playerlist, learning_mode = True):
         self.spawner          = spawner
         self.logic            = TetrisLogic()
         self.players_controll = playerlist
         self.displayers       = TetrisDisplayers(screen, position, self.logic.get_grid() )
         self.flow_controll    = TimerController(self.players_controll)
+        self.learning_mode    = learning_mode
         self.reset()
 
 
@@ -69,11 +72,12 @@ class Tetris:
         self.displayers.draw()
 
     def update(self, delta):
-        if self.is_game_over : return
 
         self.displayers.synchronize_grid(self.logic.get_grid())
         self.displayers.synchronize_tetromino( self.spawner.c_tetromino, self.spawner.n_tetromino )
         self.displayers.synchronize_numbers( self.score, self.number_of_tetrominos )
+
+        if self.is_game_over : return
 
         self.drop_time = self.flow_controll.getTimeDelay()
 
@@ -94,7 +98,7 @@ class Tetris:
             self.spawner.get_next()
             self.score = self.logic.score
             self.number_of_tetrominos += 1
-        if self.logic.game_over() or self.number_of_tetrominos > MAX_NUMBER_PER_GAME: 
+        if self.logic.game_over() or ( self.number_of_tetrominos > MAX_NUMBER_PER_GAME and self.learning_mode ): 
             self.players_controll.game_over_feedback(self.score, self.number_of_tetrominos)
             self.spawner.disable()
             self.is_game_over = True
