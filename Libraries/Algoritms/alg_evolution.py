@@ -6,7 +6,8 @@ import time
 from Libraries.Structures.logger import *
 from Libraries.Structures.backupCreator import *
 from Libraries.consts import DATE_TIME, MAX_NUMBER_PER_GAME
-from Libraries.Structures.best_saver import instance, BestUnitSaver
+from Libraries.Structures.best_saver import BestUnitsBackupSaver, BestUnitSaver
+from Libraries.Structures.meansures import Meansures
 
 class EvolutionAlgoritm:
 	population             = []
@@ -19,6 +20,8 @@ class EvolutionAlgoritm:
 	generation             = 0 
 	unchecked_population   = []
 	dateTime               = ""
+	timer                  = 0
+	contine_writing_logs   = False
 
 	file_name_best =""
 	file_name_avg  =""
@@ -30,22 +33,15 @@ class EvolutionAlgoritm:
 		self.unchecked_population = []
 
 		self.EVOLUTION_VECTOR_DIMENSIONS = numberOfDimensions
+		Meansures.register_meansure("GenerationProcessing")
 
-		#lastbest = instance.getLastBest("Evolution" + str(EVOLUTION_VECTOR_DIMENSIONS))
-		#unit = Vector(EVOLUTION_VECTOR_DIMENSIONS, unit = True)
-		#unit.v = lastbest[0]
+		self.contine_writing_logs, self.population, self.generation, self.dateTime = Backup.load_evolution(self.EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES)
 
-		#self.population.append( [unit, 0])
-
-		style, self.population, self.generation, self.dateTime = Backup.load_evolution(self.EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES)
-
-		if not style:
+		if not self.contine_writing_logs:
 			self.dateTime = DATE_TIME
 			self.createPopulation()
 		else:
 			self.fit(False)
-
-		self.register_logs(self.dateTime, style)
 
 	def createPopulation(self):
 		for i in range(self.POPULATION_SIZE):
@@ -53,14 +49,14 @@ class EvolutionAlgoritm:
 		for i in range( self.POPULATION_SIZE):
 			self.unchecked_population.append( [ i, self.population[i][0], 0 ] )
 
-	def register_logs(self, dateTime, style):
+	def register_logs(self):
 		self.file_name_best = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_best_change"
 		self.file_name_avg  = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_avrg_change"
 		self.file_name_pop   ="EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_populations"
 
-		LoggerInstance.register_log( self.file_name_best, dateTime, continueSyle=style)
-		LoggerInstance.register_log( self.file_name_avg,  dateTime, continueSyle=style)
-		LoggerInstance.register_log( self.file_name_pop,  dateTime, continueSyle=style)
+		LoggerInstance.register_log( self.file_name_best, self.dateTime, "evo", continueSyle=self.contine_writing_logs)
+		LoggerInstance.register_log( self.file_name_avg,  self.dateTime, "evo", continueSyle=self.contine_writing_logs)
+		LoggerInstance.register_log( self.file_name_pop,  self.dateTime, "evo", continueSyle=self.contine_writing_logs)
 
 	def add_score(self, score, cleaned):
 		
@@ -179,7 +175,8 @@ class EvolutionAlgoritm:
 		for i in range(int(0.05*self.POPULATION_SIZE)):
 			self.unchecked_population.append([ self.POPULATION_SIZE-i-1, Vector(self.EVOLUTION_VECTOR_DIMENSIONS, unit=True), 0 ] )
 
-		if logInfoEnabled: 
+		if logInfoEnabled:
+			self.register_logs()
 			self.logInfo()
 			Backup.save_evolution( self.population, self.generation, self.dateTime, self.MUTATION_RATE, self.NUMBER_OF_PLAYED_GAMES, self.EVOLUTION_VECTOR_DIMENSIONS)
 
@@ -189,15 +186,16 @@ class EvolutionAlgoritm:
 
 
 	def logInfo(self):
-		instance.saveScore("Evolution" + str(self.EVOLUTION_VECTOR_DIMENSIONS), self.population[0][0], self.population[0][1] )
+		BestUnitsBackupSaver.saveScore("Evolution" + str(self.EVOLUTION_VECTOR_DIMENSIONS), self.population[0][0], self.population[0][1] )
 
 		avrg = 0.0
 		for i in range( self.POPULATION_SIZE ):
 			avrg += self.population[i][1]
 		avrg /= self.POPULATION_SIZE
 
+
 		LoggerInstance.log( self.file_name_best, str(self.generation) + ", " + str(self.population[0][1]) + ", " + str(self.population[0][0]) )
-		LoggerInstance.log( self.file_name_avg, str(self.generation) + ", " + str(avrg))
+		LoggerInstance.log( self.file_name_avg, str(self.generation) + ", " + str(avrg) + ", " + str(Meansures.lap_meansure("GenerationProcessing")))
 		LoggerInstance.log( self.file_name_pop, str(self))
 		LoggerInstance.log( self.file_name_pop, "#################################" )
 

@@ -5,7 +5,7 @@ from copy   import deepcopy
 class Vector:
     v = []
 
-    def __init__(self,  size, unit=False, rangee=(-10,10)):
+    def __init__(self,  size, unit=False, rangee=(-5.0,5.0)):
         self.v = [] 
         for _ in range(size): self.v.append( uniform( rangee[0], rangee[1] ) )
         if unit: self.unit()

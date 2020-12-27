@@ -14,13 +14,13 @@ class EvolutionAi:
     holes  = [0,0,0,0,0,0,0,0,0,0]
 
     def __init__(self, predefined_values = None, numberOfDimenstions = 4):
-        print( predefined_values )
         self.numberOfDimensions = numberOfDimenstions
         if( predefined_values == None):
             self.evolution_alg  = EvolutionAlgoritm(numberOfDimenstions)
             self.current_values = self.evolution_alg.unchecked_population[0][1]
         else:
             self.isLocked = True
+            print( "EvolutionAgent", numberOfDimenstions, " Loaded best for presenter app :" + str(predefined_values) )
             self.current_values = predefined_values
 
     def try_fit(self, x_pos, t, grid):

@@ -7,25 +7,6 @@ from Libraries.Structures.playerList       import PlymodeController
 from Libraries.Structures.timerController  import TimerController
 from Libraries.consts                      import *
 
-
-class Logger:
-    files = [] 
-    active = -1
-
-    def __init__(self):
-        self.files = [ 
-            open("logs/ooo1.txt", "w"),
-            open("logs/ooo2.txt", "w"),
-            open("logs/ooo3.txt", "w"),
-            open("logs/ooo0.txt", "w"),
-        ]
-
-    def getNext(self):
-        self.active += 1
-        return self.files[self.active]
-
-lllll = Logger()
-
 class Tetris:
 
     score  = 0
@@ -106,6 +87,7 @@ class Tetris:
     def process(self, event):
         self.flow_controll.process(event)
         self.players_controll.process(event)
+        if self.players_controll.player_changed(): self.reset()
         self.displayers.process(event)
 
         if not self.players_controll.is_AI_Player():

@@ -1,12 +1,12 @@
 import pygame
 import time
 
-from Libraries.consts                 import *
-from Libraries.Structures.tetrisGame  import Tetris
-from Libraries.Structures.displayers  import FPSDisplayer
+from Libraries.consts                      import *
+from Libraries.Structures.tetrisGame       import Tetris
+from Libraries.Structures.displayers       import FPSDisplayer
 from Libraries.Structures.tetrominoSpawner import RandomSpawnTetromino
-from Libraries.Structures.playerList import PlymodeController
-
+from Libraries.Structures.playerList       import PlymodeController
+from Libraries.Structures.meansures        import Meansures
 
 class Game:
     screen      = None
@@ -43,4 +43,5 @@ class Game:
     def update(self,  delta): 
         if self.tetris.is_game_over: self.tetris.reset()
         self.tetris.update(delta)
+        Meansures.tick()
         self.fpsRate.update(delta)

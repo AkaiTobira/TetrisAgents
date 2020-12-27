@@ -23,7 +23,7 @@ class BestUnitSaver:
         #self.controll_file = open("logs/bestBackup.json", "r")
         with open('logs/bestBackup.json') as json_file:
             self.json_converted = json.loads(json_file.read())
-        self.printFile()
+        #self.printFile()
 
     def saveScore(self, name, value, score):
 
@@ -47,4 +47,4 @@ class BestUnitSaver:
             json.dump(self.json_converted, outfile, indent=4)
         
 
-instance = BestUnitSaver()
+BestUnitsBackupSaver = BestUnitSaver()
