@@ -60,7 +60,7 @@ class TetrisGrid:
                     self.holes[i] += 1
 
         self.maxColumn = max(self.heights)
-        self.sumHeight = sum(self.heights)
+        self.sumHeight = sum(self.heights)*0.1
         self.sumHoles  = sum(self.holes)
         self.bumpiness    = 0
         self.biggestWheel = 0

@@ -21,7 +21,7 @@
             -0.14443580762661784
         ],
         "score": {
-            "combined": 1416900000035130,
+            "combined": 0,
             "cleared_rows": 14169,
             "cleared_tetrimino": 35130
         }
@@ -36,22 +36,22 @@
             -0.06192638317633478
         ],
         "score": {
-            "combined": 1630600000040004,
+            "combined": 0,
             "cleared_rows": 16306,
             "cleared_tetrimino": 40004
         }
     },
     "Evolution4": {
         "body": [
-            -0.037404485112483635,
-            -0.6375806303640039,
-            -0.2741911687988796,
-            -0.1296542671020609
+            0.07426284312087036,
+            -0.3567307989211882,
+            -0.3796770720591299,
+            -0.08526470993804414
         ],
         "score": {
-            "combined": 2028000000050005,
-            "cleared_rows": 20280,
-            "cleared_tetrimino": 50005
+            "combined": 1951200000046691,
+            "cleared_rows": 19512,
+            "cleared_tetrimino": 46691
         }
     },
     "Evolution5": {
@@ -63,9 +63,17 @@
             -0.32597586377155385
         ],
         "score": {
-            "combined": 2026900000050005,
+            "combined": 0,
             "cleared_rows": 20269,
             "cleared_tetrimino": 50005
+        }
+    },
+    "NeuralNetwork": {
+        "body": "BestNeuralNetwork",
+        "score": {
+            "combined": 272500000006298,
+            "cleared_rows": 2725,
+            "cleared_tetrimino": 6298
         }
     },
     "Evolution6": {
@@ -78,7 +86,7 @@
             0.08227165114945016
         ],
         "score": {
-            "combined": 2025600000049148,
+            "combined": 0,
             "cleared_rows": 20256,
             "cleared_tetrimino": 49148
         }

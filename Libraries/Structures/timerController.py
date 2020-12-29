@@ -17,11 +17,8 @@ class TimerController:
                 toList = list(self.keys_to_react.keys())
                 index = toList.index(event.key)
                 self.last_presed_key = toList[index]
-    
 
     def getTimeDelay(self):
-        #if self.playerList.is_AI_Player():
-        #    return 0.0
         return self.keys_to_react[self.last_presed_key]
 
     def reset(self):

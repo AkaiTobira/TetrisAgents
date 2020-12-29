@@ -1,8 +1,8 @@
 
 from Libraries.Structures.tetiomers         import O,L,N,Z,T,I,J
-from Libraries.consts            import get_color, Colors
-from Libraries.Algoritms.alg_nn            import NeuralNetwork
-
+from Libraries.consts            import get_color, Colors, DATE_TIME
+from Libraries.Algoritms.alg_nn            import NeuralNetwork, NeuralNetworkFixed
+from Libraries.Structures.best_saver import BestUnitsBackupSaver, BestUnitSaver
 
 import pygame
 import math
@@ -22,22 +22,17 @@ class ReinforcmentNetwork:
     nn             = None
     last_action    = None
     rewards        = {}
-    previous_state = [0,0,0,0]
-    current_state  = [0,0,0,0]
+    previous_state = [0,0,0,0,0,0]
+    current_state  = [0,0,0,0,0,0]
 
     scores         = []
 
-    def __init__(self):
-        self.nn = NeuralNetwork( 4 )
+    def __init__(self, loadedModel = None):
+        if( loadedModel == None): self.nn = NeuralNetwork( 6 )
+        else: self.nn = NeuralNetworkFixed( loadedModel, 6 )
 
     def try_fit(self, x_pos, t, grid):
         t.position[0] = x_pos
-
-        mins = max( x_pos, 0)
-        maxs = min( x_pos + 4, GRID_WIDTH)
-        importantHeights = grid.heights[mins: maxs]
-        pos_y = max( math.fabs(GRID_HEIGHT - max( importantHeights )) - 4, 0 )
-        t.position[1] = int(pos_y)
 
         while True:
             t.position[1] += 1
@@ -50,7 +45,9 @@ class ReinforcmentNetwork:
         return [ grid.maxColumn, 
                  grid.sumHeight, 
                  grid.sumHoles , 
-                 grid.bumpiness#+ grid.clearedRow
+                 grid.bumpiness,
+                 grid.clearedRow,
+                 grid.biggestWheel
                 ]
 
     def next_move(self, t, grid, _unsed):
@@ -101,22 +98,23 @@ class ReinforcmentNetwork:
 #        print( state, reward )
 #        return 0
 
+
+    bestScore = 0
+
     def game_over_feedback(self, score, cleaned):
         self.nn.add_to_memory( self.previous_state, self.current_state, self.rewards[self.last_action], True )
         self.rewards        = {}
-        self.previous_state = [0,0,0,0]
-        self.current_state     = [0,0,0,0]
+        self.previous_state = [0,0,0,0,0,0]
+        self.current_state  = [0,0,0,0,0,0]
         self.last_action    = None
 
-        self.scores.append( score )
+        sss = score * ROW_MULTIPLER + cleaned
 
-        avg_score = mean(self.scores)
-        min_score = min(self.scores)
-        max_score = max(self.scores)
+        if sss > self.bestScore: 
+            self.nn.model.save(DATE_TIME)
+            BestUnitsBackupSaver.saveNeuralNetwork(sss, self.nn.model)
+            self.bestScore = sss
 
-        print("New score :", score, "AVG :", avg_score, "MIN :", min_score, "MAX :", max_score)
-
-    #    log.log(0, avg_score=avg_score, min_score=min_score,
-    #                max_score=max_score)
+        print("New score :", score, "cleaned :", cleaned, "Best Score :", self.bestScore)
 
         self.nn.train()

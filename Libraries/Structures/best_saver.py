@@ -4,17 +4,6 @@
 import json
 from Libraries.consts  import ROW_MULTIPLER
 
-# some JSON:
-#x =  '{ "name":"John", "age":30, "city":"New York"}'
-
-# parse x:
-
-
-# the result is a Python dictionary:
-#print(y["age"]) 
-
-#if
-
 class BestUnitSaver:
     controll_file  = None
     json_converted = None 
@@ -24,6 +13,18 @@ class BestUnitSaver:
         with open('logs/bestBackup.json') as json_file:
             self.json_converted = json.loads(json_file.read())
         #self.printFile()
+
+
+    def saveNeuralNetwork(self, score, model):
+        if score > self.json_converted["NeuralNetwork"]["score"]["combined"] :
+            self.json_converted["NeuralNetwork"] = { 
+                "body"  : "BestNeuralNetwork", 
+                "score" : { "combined"     : score,
+                            "cleared_rows" : int(score/ROW_MULTIPLER), 
+                            "cleared_tetrimino" : int(score%ROW_MULTIPLER)}
+            }
+            model.save("BestNeuralNetwork")
+            self.saveDump()
 
     def saveScore(self, name, value, score):
 

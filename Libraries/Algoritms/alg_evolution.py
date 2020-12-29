@@ -35,13 +35,13 @@ class EvolutionAlgoritm:
 		self.EVOLUTION_VECTOR_DIMENSIONS = numberOfDimensions
 		Meansures.register_meansure("GenerationProcessing")
 
-		self.contine_writing_logs, self.population, self.generation, self.dateTime = Backup.load_evolution(self.EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES)
+		self.contine_writing_logs, self.population, self.unchecked_population, self.generation, self.dateTime = Backup.load_evolution(self.EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES)
 
 		if not self.contine_writing_logs:
 			self.dateTime = DATE_TIME
 			self.createPopulation()
 		else:
-			self.fit(False)
+			if len(self.unchecked_population) == 0: self.fit(False)
 
 	def createPopulation(self):
 		for i in range(self.POPULATION_SIZE):
@@ -61,7 +61,7 @@ class EvolutionAlgoritm:
 	def add_score(self, score, cleaned):
 		
 		#end = time.time()
-		self.unchecked_population[0][2] +=  score + cleaned 
+		self.unchecked_population[0][2] += score + cleaned 
 		#self.moves.write( str(len( self.unchecked_population )) + "#" + str(self.unchecked_population[0][0]) + "#" + str(self.unchecked_population[0][1]) + "#" + str(self.unchecked_population[0][2]) + "#" + str((cleaned/5.0))[:5] + "%#" + str(end - self.start) + "\n" )
 		print( len( self.unchecked_population ), self.unchecked_population[0][0], self.unchecked_population[0][1], self.unchecked_population[0][2], str((cleaned/MAX_NUMBER_PER_GAME * 100.0 ))[:6] + "%" )
 		#self.start = end
@@ -75,19 +75,19 @@ class EvolutionAlgoritm:
 
 		self.replace_in_population()
 		self.curenntly_played_game = 0
-		if len(self.unchecked_population) == 0: self.fit() 
+		if len(self.unchecked_population) == 0: self.fit()
 
+		Backup.save_evolution(self)
 		return self.unchecked_population[0][1].v
 
 	def replace_in_population(self): 
-		
-		#self.population.append([self.unchecked_population[0][1], self.unchecked_population[0][2]])
-		
-		index = self.unchecked_population[0][0]
-		if self.unchecked_population[0][2] >= self.population[index][1]: 
+		#index = self.unchecked_population[0][0]
+		#if self.unchecked_population[0][2] >= self.population[index][1]: 
 			#self.moves.write( "Replaced#"+ str(self.unchecked_population[0][2]) + "#" + str(self.population[index][1]) + "#" + str(index)  + "\n" )
 			#print( "Replaced", self.unchecked_population[0][2], self.population[index][1], index, )
-			self.population[index] = [ self.unchecked_population[0][1], self.unchecked_population[0][2] ]
+		#	self.population[index] = [ self.unchecked_population[0][1], self.unchecked_population[0][2] ]
+
+		self.population.append([self.unchecked_population[0][1], self.unchecked_population[0][2]])
 		self.unchecked_population = self.unchecked_population[1:]
 
 	def __str__(self):
@@ -115,12 +115,14 @@ class EvolutionAlgoritm:
 		return [ f_best, s_best ]
 	
 	def crossover(self, parents):
-		sume = parents[0][2] + parents[1][2]
+		score1 = parents[0][2]/ROW_MULTIPLER
+		score2 = parents[1][2]/ROW_MULTIPLER
+
+		sume = score1 + score2
 
 		new_one = Vector(self.EVOLUTION_VECTOR_DIMENSIONS,unit=True)
-
-		if sume == 0 : new_one = (parents[0][1] * ( 0.5 ) + parents[1][1] * (0.5))
-		else : new_one = parents[0][1] * ( parents[0][2] / sume ) + parents[1][1] * (parents[1][2]/sume)
+		if score1 < 0.01 or score2 < 0.01 : new_one = (parents[0][1] * ( 0.5 ) + parents[1][1] * (0.5))
+		else : new_one = parents[0][1] * ( score1/sume ) + parents[1][1] * (score2/sume)
 		
 		new_one.mutate(self.MUTATION_RATE)
 		return [new_one, 0]
@@ -178,11 +180,8 @@ class EvolutionAlgoritm:
 		if logInfoEnabled:
 			self.register_logs()
 			self.logInfo()
-			Backup.save_evolution( self.population, self.generation, self.dateTime, self.MUTATION_RATE, self.NUMBER_OF_PLAYED_GAMES, self.EVOLUTION_VECTOR_DIMENSIONS)
-
 			self.generation += 1
 			print( "Generation " + str(self.generation))
-
 
 
 	def logInfo(self):

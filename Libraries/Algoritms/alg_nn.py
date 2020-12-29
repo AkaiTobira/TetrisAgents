@@ -5,35 +5,50 @@ from Libraries.consts import DATE_TIME
 
 from Libraries.vector import Vector
 
+from Libraries.Structures.backupCreator import Backup
+
 from keras.models import Sequential, save_model, load_model
 from keras.layers import Dense
 from collections import deque
 import numpy as np
 import random
 
-
 class NeuralNetwork:
-
+    LEARNING_DELAY = 5
+    BUFFOR_SIZE    = 4000
+    delay = 0
+    dateTime = ""
 
     def __init__(self, state_size, replay_start_size=None):
-
-        self.state_size     = state_size
-        self.memory         = deque(maxlen=10000)
-        self.discount       = 0.95
-        self.epsilon        = 1
-        self.epsilon_min    = 0
-        self.epsilon_decay  = (1 - 0) / (500)
-        self.n_neurons      = [32,32]
-        self.activations    = ['relu', 'relu', 'linear']
+        self.n_neurons      = [32, 32, 32]
+        self.activations    = ['relu', 'relu', 'relu', 'linear']
+        self.loss           = 'mse'
+        self.optimizer      = 'adam'
 
         assert len(self.activations) == len(self.n_neurons) + 1
 
-        self.loss           = 'mse'
-        self.optimizer      = 'adam'
-        if not replay_start_size:
-            replay_start_size  = 5000
+        self.state_size     = state_size
+        can_continue, model, memory, discount, epsilon, dateTime = Backup.load_neural_network(state_size)
+
+        if can_continue:
+            self.model    = model
+            self.memory   = deque(memory, maxlen=self.BUFFOR_SIZE)
+            self.discount = discount
+            self.epsilon  = epsilon
+            self.dateTime = dateTime
+        else:
+            self.memory    = deque(maxlen=self.BUFFOR_SIZE)
+            self.model     = self._build_model()
+            self.discount  = 0.95
+            self.epsilon   = 1
+            self.dateTime = DATE_TIME
+
+        self.epsilon_min    = 0
+        self.epsilon_decay  = 0.002
+
+        if not replay_start_size: replay_start_size  = self.BUFFOR_SIZE/2
         self.replay_start_size = replay_start_size
-        self.model             = self._build_model()
+
 
     def _build_model(self):
         model = Sequential()
@@ -83,12 +98,15 @@ class NeuralNetwork:
         return best_key
 
 
-    def train(self, batch_size=32, epochs=3):
+    def train(self, batch_size=128, epochs=10):
         n = len(self.memory)
     
-        print( n )
+        print( n, self.delay )
 
         if n >= self.replay_start_size and n >= batch_size:
+            self.delay += 1
+            if self.delay < self.LEARNING_DELAY: return
+            self.delay = 0
 
             batch = random.sample(self.memory, batch_size)
 
@@ -115,6 +133,39 @@ class NeuralNetwork:
 
             print( "FIT CALLED")
 
+            Backup.save_neural_network(self)
+
             # Update the exploration variable
             if self.epsilon > self.epsilon_min:
                 self.epsilon -= self.epsilon_decay
+
+        
+
+class NeuralNetworkFixed: 
+    model = None
+    state_size = 0
+
+    def __init__(self, modelName, state_size):
+        self.model = load_model(modelName)
+        self.state_size = state_size
+        print("NeuralNetwork Loaded best for presenter app")
+
+    def best_state(self, states):
+        max_value  = None
+        best_state = None
+        best_key   = None
+
+        for state_key in states.keys():
+            state = states[state_key]
+            value = self.predict_value(np.reshape(state, [1, self.state_size]))
+            if not max_value or value > max_value:
+                max_value  = value
+                best_state = state
+                best_key   = state_key
+
+        return best_key
+
+    def predict_value(self, state):
+        return self.model.predict(state)[0]
+
+    def add_to_memory(self, current_state, next_state, reward, done): pass

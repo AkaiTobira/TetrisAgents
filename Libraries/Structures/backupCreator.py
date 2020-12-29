@@ -2,58 +2,92 @@
 from Libraries.consts import *
 from Libraries.vector import Vector
 from Libraries.Algoritms.particle import Particle
+from keras.models     import Sequential, save_model, load_model
+
 import json
 
 class BackupCreator:
     particles = { 4 : [], 5 :[], 6 :[] }
-    evolution = { 4 : [], 5 :[], 6 :[], "H4" : {}, "H5" : {}, "H6" : {} }
 
     def __init__(self): pass
+
+    def save_neural_network(self, neuralNetwork):
+        backup = {
+            "input_size" : neuralNetwork.state_size,
+            "date_time"  : neuralNetwork.dateTime,
+            "model_path" : "logs/nn/" + neuralNetwork.dateTime,
+            "epsilon"    : neuralNetwork.epsilon,
+            "discount"   : neuralNetwork.discount,
+            "memory"     : list(neuralNetwork.memory)
+        }
+
+        neuralNetwork.model.save(backup["model_path"])
+
+        with open('Backups/NN.json', 'w') as outfile:
+            json.dump(backup, outfile, indent=4)
+
+    def load_neural_network(self, inputSize):
+        json_converted = None
+        with open('Backups/NN.json', "r") as json_file:
+            json_converted = json.loads(json_file.read())
+
+        if inputSize != json_converted["input_size"]:
+            print( "Backups/NN : Backup is different, couldn't read from file")
+            return False, None, [], 0, 0, ""
+
+        model  = load_model( json_converted["model_path"])
+        memory = json_converted["memory"]
+        return True, model, memory, json_converted["discount"], json_converted["epsilon"], json_converted["date_time"]
+
 
     def load_evolution(self, numberOfDimenstion, numberInPopulation, number_of_games):
         json_converted = None
         with open('Backups/Evo' + str(numberOfDimenstion) + '.json', 'r') as json_file:
             json_converted = json.loads(json_file.read())
 
-        if numberInPopulation != json_converted["population_size"] or number_of_games != json_converted["number_of_games"]:
+        if number_of_games != json_converted["number_of_games"]:
             print(  'Backups/Evo' + str(numberOfDimenstion) + ": Backup is different, couldn't read from file")
-            return False, [], 0, ""
-
-        if numberInPopulation != len(json_converted["population"]):
-            print(  'Backups/Evo' + str(numberOfDimenstion) + ": File data corrupted, couldn't read from file")
-            return False, [], 0, ""
+            return False, [], [], 0, ""
 
         population = []
-        for i in range( numberInPopulation ):
+        for i in range( len( json_converted["population"]) ):
             vec = Vector(numberOfDimenstion)
             vec.v =  json_converted["population"][i]["values"]
             population.append( [ vec, json_converted["population"][i]["score"]] )
 
+        to_check = []
+        for i in range( len( json_converted["to_check"]) ):
+            vec = Vector(numberOfDimenstion)
+            vec.v =  json_converted["to_check"][i]["values"]
+            to_check.append( [ vec, 0] )
+
         print('Backups/Evo' + str(numberOfDimenstion) + ": Backup Loaded")
-        return True, population, json_converted["generation"], json_converted["date_time"]
+        return True, population, to_check, json_converted["generation"], json_converted["date_time"]
 
-
-        
-
-
-    def save_evolution(self, population, generation, dateTime, mutationrate, number_of_games, numberOfDimesions):
+    def save_evolution(self, evolutionAlgoritm):
         backup = {
-            "generation"      : generation,
-            "date_time"       : dateTime,
-            "number_of_games" : number_of_games,
-            "population_size" : len(population),
+            "generation"      : evolutionAlgoritm.generation,
+            "date_time"       : evolutionAlgoritm.dateTime,
+            "number_of_games" : evolutionAlgoritm.NUMBER_OF_PLAYED_GAMES,
+            "population_size" : len(evolutionAlgoritm.population),
             "number_of_tetrominos_per_game" : MAX_NUMBER_PER_GAME,
-            "mutation_rate"   : mutationrate,
-            "population"      : []
+            "mutation_rate"   : evolutionAlgoritm.MUTATION_RATE,
+            "population"      : [],
+            "to_check"        : []
         }
 
-        for i in range( len(population) ):
+        for i in range( len(evolutionAlgoritm.population) ):
             backup["population"].append( {
-                "score"  : population[i][1],
-                "values" : population[i][0].v
+                "score"  : evolutionAlgoritm.population[i][1],
+                "values" : evolutionAlgoritm.population[i][0].v
             })
 
-        with open('Backups/Evo' + str(numberOfDimesions) + '.json', 'w') as outfile:
+        for i in range( len(evolutionAlgoritm.population) ):
+            backup["to_check"].append( {
+                "values"  : evolutionAlgoritm.population[i][0].v
+            })
+
+        with open('Backups/Evo' + str(evolutionAlgoritm.EVOLUTION_VECTOR_DIMENSIONS) + '.json', 'w') as outfile:
             json.dump(backup, outfile, indent=4)
 
     def load_pso(self, numberOfDimenstion, sizeOfPopulation):

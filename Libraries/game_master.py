@@ -11,17 +11,29 @@ class GameState(Enum):
     LearningApp = 1,
     PresentingApp = 2
 
-class GameMaster:
+class StateChanger:
     activeApp    = None
     inactiveApp  = None
-    activeState  = GameState.LearningApp
-    running      = True
+
+    def get_state(self, state):
+        if state == GameState.LearningApp:
+            if self.activeApp == None: self.activeApp = Game((250,860), "Tetris")
+            return self.activeApp
+        if state == GameState.PresentingApp:
+            if self.inactiveApp == None: self.inactiveApp  = Presenter((int(1300 * NUMBER_OF_SCREENS/5.0) ,860), "Tetris")
+            return self.inactiveApp
+
+class GameMaster:
+    stateSwitcher = None
+    activeScreen  = None
+    activeState   = GameState.LearningApp
+    running       = True
 
     def __init__(self):
         pygame.mouse.set_visible(False)
-        self.inactiveApp  = Presenter((int(1300 * NUMBER_OF_SCREENS/5.0) ,860), "Tetris")
-        self.activeApp    = Game((250,860), "Tetris")
-
+        self.stateSwitcher = StateChanger()
+        self.activeScreen  = self.stateSwitcher.get_state(self.activeState)
+        
     def process(self):
         while True:
             event = pygame.event.poll()
@@ -30,7 +42,7 @@ class GameMaster:
                 self.running = False
                 return
             self.process_change_app(event)
-            self.activeApp.process(event)
+            self.activeScreen.process(event)
 
     def process_change_app(self, event):
         if event.type == pygame.KEYUP:
@@ -38,11 +50,10 @@ class GameMaster:
                 self.change_app()
 
     def update(self, delta):
-        self.activeApp.update(delta)
+        self.activeScreen.update(delta)
 
     def draw(self,):
-        self.activeApp.draw()
-
+        self.activeScreen.draw()
 
     def is_running(self):
         return self.running
@@ -53,9 +64,6 @@ class GameMaster:
 
         elif self.activeState == GameState.PresentingApp:
             self.activeState = GameState.LearningApp
-            
-        temp = self.activeApp
-        self.activeApp = self.inactiveApp
-        self.inactiveApp = temp
 
-        self.activeApp.reset_resolution()
+        self.activeScreen  = self.stateSwitcher.get_state(self.activeState)
+        self.activeScreen.reset_resolution()

@@ -25,8 +25,8 @@ class PlymodeController:
             pygame.K_4 : EvolutionAi(None, 6),
             pygame.K_5 : PSOAi(None, 4),
             pygame.K_6 : PSOAi(None, 5),
-            pygame.K_7 : PSOAi(None, 6)
-        #    pygame.K_6 : ReinforcmentNetwork(),
+            pygame.K_7 : PSOAi(None, 6),
+            pygame.K_8 : ReinforcmentNetwork()
         }
         self.actors_names ={
             pygame.K_1 : "Active Player : Human",
@@ -75,14 +75,13 @@ class PresenterBotsController:
 
     def __init__( self ): 
         self.bots = [    
-            PresenterBotUnit(EvolutionAi( BestUnitsBackupSaver.getLastBest("Evolution4"), 4 )),
-            PresenterBotUnit(EvolutionAi( BestUnitsBackupSaver.getLastBest("Evolution5"), 5 )),
+            PresenterBotUnit(ReinforcmentNetwork(BestUnitsBackupSaver.getLastBest("NeuralNetwork"))),
             PresenterBotUnit(PSOAi( BestUnitsBackupSaver.getLastBest("PSO4") , 4)),
-            PresenterBotUnit(PSOAi( BestUnitsBackupSaver.getLastBest("PSO5") , 5)),                    
+            PresenterBotUnit(EvolutionAi( BestUnitsBackupSaver.getLastBest("Evolution4"), 4 )),
+            PresenterBotUnit(PSOAi( BestUnitsBackupSaver.getLastBest("PSO5") , 5)),
+            PresenterBotUnit(EvolutionAi( BestUnitsBackupSaver.getLastBest("Evolution5"), 5 )),
             PresenterBotUnit(PSOAi( BestUnitsBackupSaver.getLastBest("PSO6") , 6)),
-            
-            PresenterBotUnit(EvolutionAi( BestUnitsBackupSaver.getLastBest("Evolution6"), 6 )),
-            PresenterBotUnit(EvolutionAi( BestUnitsBackupSaver.getLastBest("Evolution6") )),
+            PresenterBotUnit(EvolutionAi( BestUnitsBackupSaver.getLastBest("Evolution6"), 6 ))
         ]
         self.bots = self.bots[ : NUMBER_OF_SCREENS ]
 
