@@ -5,13 +5,14 @@ import time
 
 from Libraries.Structures.logger import *
 from Libraries.Structures.backupCreator import *
-from Libraries.consts import DATE_TIME, MAX_NUMBER_PER_GAME
+from Libraries.consts import DATE_TIME, MAX_NUMBER_PER_GAME_EVO
 from Libraries.Structures.best_saver import BestUnitsBackupSaver, BestUnitSaver
 from Libraries.Structures.meansures import Meansures
 
 class EvolutionAlgoritm:
 	population             = []
 	POPULATION_SIZE        = 100
+	NEW_POPULATION_SIZE    = 35
 	MUTATION_RATE          = 15
 	NUMBER_OF_PLAYED_GAMES = 5
 	EVOLUTION_VECTOR_DIMENSIONS = 4
@@ -63,7 +64,7 @@ class EvolutionAlgoritm:
 		#end = time.time()
 		self.unchecked_population[0][2] += score + cleaned 
 		#self.moves.write( str(len( self.unchecked_population )) + "#" + str(self.unchecked_population[0][0]) + "#" + str(self.unchecked_population[0][1]) + "#" + str(self.unchecked_population[0][2]) + "#" + str((cleaned/5.0))[:5] + "%#" + str(end - self.start) + "\n" )
-		print( len( self.unchecked_population ), self.unchecked_population[0][0], self.unchecked_population[0][1], self.unchecked_population[0][2], str((cleaned/MAX_NUMBER_PER_GAME * 100.0 ))[:6] + "%" )
+		print( len( self.unchecked_population ), self.unchecked_population[0][0], self.unchecked_population[0][1], self.unchecked_population[0][2], str((cleaned/MAX_NUMBER_PER_GAME_EVO * 100.0 ))[:6] + "%" )
 		#self.start = end
 
 	def get_next_active(self):
@@ -163,8 +164,9 @@ class EvolutionAlgoritm:
 		self.sort()
 
 		self.population = self.population[:self.POPULATION_SIZE]
+		self.unchecked_population = []
 
-		while new_generation < int(0.3*self.POPULATION_SIZE) :
+		while new_generation < self.NEW_POPULATION_SIZE - int(0.05*self.POPULATION_SIZE):
 			t = self.select_for_tournament()
 			temp = self.crossover(t)
 			self.unchecked_population.append([t[0][0], temp[0], temp[1]])
@@ -176,6 +178,8 @@ class EvolutionAlgoritm:
 		
 		for i in range(int(0.05*self.POPULATION_SIZE)):
 			self.unchecked_population.append([ self.POPULATION_SIZE-i-1, Vector(self.EVOLUTION_VECTOR_DIMENSIONS, unit=True), 0 ] )
+
+		self.unchecked_population = self.unchecked_population[:self.NEW_POPULATION_SIZE]
 
 		if logInfoEnabled:
 			self.register_logs()

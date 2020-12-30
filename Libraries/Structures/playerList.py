@@ -8,7 +8,7 @@ from Libraries.Agents.agent_pso        import PSOAi
 from Libraries.Agents.agent_rlearning  import ReinforcmentLearning
 from Libraries.Agents.agent_rnetwork   import ReinforcmentNetwork
 from Libraries.Structures.best_saver   import BestUnitsBackupSaver
-from Libraries.consts import NUMBER_OF_SCREENS
+from Libraries.consts import NUMBER_OF_SCREENS, MAX_NUMBER_PER_GAME_HUM, MAX_NUMBER_PER_GAME_EVO, MAX_NUMBER_PER_GAME_PSO, MAX_NUMBER_PER_GAME_NN
 
 class PlymodeController:
     learning_modes = {}
@@ -19,14 +19,14 @@ class PlymodeController:
     def __init__( self, switch_enabled = True ):
         self.switching_enabled = switch_enabled
         self.learning_modes = {
-            pygame.K_1 : HumanPlayer(),
-            pygame.K_2 : EvolutionAi(None, 4),
-            pygame.K_3 : EvolutionAi(None, 5),
-            pygame.K_4 : EvolutionAi(None, 6),
-            pygame.K_5 : PSOAi(None, 4),
-            pygame.K_6 : PSOAi(None, 5),
-            pygame.K_7 : PSOAi(None, 6),
-            pygame.K_8 : ReinforcmentNetwork()
+            pygame.K_1 : None,
+            pygame.K_2 : None,
+            pygame.K_3 : None,
+            pygame.K_4 : None,
+            pygame.K_5 : None,
+            pygame.K_6 : None,
+            pygame.K_7 : None,
+            pygame.K_8 : None
         }
         self.actors_names ={
             pygame.K_1 : "Active Player : Human",
@@ -48,11 +48,35 @@ class PlymodeController:
     def _get_active_player_name(self):
         return self.actors_names[self.last_pressed_player_key]
 
+    def _init_player(self, keyId):
+        if keyId == pygame.K_1 : return HumanPlayer()
+        if keyId == pygame.K_2 : return EvolutionAi(None, 4)
+        if keyId == pygame.K_3 : return EvolutionAi(None, 5)
+        if keyId == pygame.K_4 : return EvolutionAi(None, 6)
+        if keyId == pygame.K_5 : return PSOAi(None, 4)
+        if keyId == pygame.K_6 : return PSOAi(None, 5)
+        if keyId == pygame.K_7 : return PSOAi(None, 6)
+        if keyId == pygame.K_8 : return ReinforcmentNetwork()
+
+    def get_max_limit(self):
+        if self.current_active_player_key == pygame.K_1 : return MAX_NUMBER_PER_GAME_HUM
+        if self.current_active_player_key == pygame.K_2 : return MAX_NUMBER_PER_GAME_EVO
+        if self.current_active_player_key == pygame.K_3 : return MAX_NUMBER_PER_GAME_EVO
+        if self.current_active_player_key == pygame.K_4 : return MAX_NUMBER_PER_GAME_EVO
+        if self.current_active_player_key == pygame.K_5 : return MAX_NUMBER_PER_GAME_PSO
+        if self.current_active_player_key == pygame.K_6 : return MAX_NUMBER_PER_GAME_PSO
+        if self.current_active_player_key == pygame.K_7 : return MAX_NUMBER_PER_GAME_PSO
+        if self.current_active_player_key == pygame.K_8 : return MAX_NUMBER_PER_GAME_NN
 
     def get_player(self, playerIndex):
-        return self.learning_modes[self.learning_modes.keys[playerIndex]]
+        keyId = self.learning_modes.keys[playerIndex]
+        if self.learning_modes[keyId] == None: 
+            self.learning_modes[keyId] = self._init_player(keyId)
+        return self.learning_modes[keyId]
 
     def get_active_player(self):
+        if self.learning_modes[self.last_pressed_player_key] == None: 
+            self.learning_modes[self.last_pressed_player_key] = self._init_player(self.last_pressed_player_key)
         return self.learning_modes[self.last_pressed_player_key]
 
     def game_over_feedback(self, score, number_of_tetrominos):

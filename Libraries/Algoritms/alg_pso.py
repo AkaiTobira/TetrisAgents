@@ -1,7 +1,7 @@
 from random import uniform, randint
 from math   import sqrt
 from copy   import deepcopy
-from Libraries.consts import DATE_TIME, MAX_NUMBER_PER_GAME, ROW_MULTIPLER
+from Libraries.consts import DATE_TIME, MAX_NUMBER_PER_GAME_PSO, ROW_MULTIPLER
 from Libraries.vector import Vector
 from Libraries.Structures.backupCreator import Backup
 from Libraries.Algoritms.particle import Particle
@@ -90,7 +90,7 @@ class PSO:
         if self.iteraiton == self.max_iteration:
             return self.best_pos
 
-        print( str(self.index), str(self.particles[self.index].pos_v), str(score), str((cleaned/MAX_NUMBER_PER_GAME * 100.0 ))[:6] + "%" )
+        print( str(self.index), str(self.particles[self.index].pos_v), str(score), str((cleaned/MAX_NUMBER_PER_GAME_PSO * 100.0 ))[:6] + "%" )
 
         if self.numberOfPlayedGames < 4:
             self.numberOfPlayedGames += 1

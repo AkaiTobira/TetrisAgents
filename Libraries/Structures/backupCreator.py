@@ -16,6 +16,7 @@ class BackupCreator:
             "input_size" : neuralNetwork.state_size,
             "date_time"  : neuralNetwork.dateTime,
             "model_path" : "logs/nn/" + neuralNetwork.dateTime,
+            "number_of_tetrominos_per_game" : MAX_NUMBER_PER_GAME_NN,
             "epsilon"    : neuralNetwork.epsilon,
             "discount"   : neuralNetwork.discount,
             "memory"     : list(neuralNetwork.memory)
@@ -31,7 +32,7 @@ class BackupCreator:
         with open('Backups/NN.json', "r") as json_file:
             json_converted = json.loads(json_file.read())
 
-        if inputSize != json_converted["input_size"]:
+        if inputSize != json_converted["input_size"] or MAX_NUMBER_PER_GAME_NN != json_converted["number_of_tetrominos_per_game"]:
             print( "Backups/NN : Backup is different, couldn't read from file")
             return False, None, [], 0, 0, ""
 
@@ -45,7 +46,7 @@ class BackupCreator:
         with open('Backups/Evo' + str(numberOfDimenstion) + '.json', 'r') as json_file:
             json_converted = json.loads(json_file.read())
 
-        if number_of_games != json_converted["number_of_games"]:
+        if number_of_games != json_converted["number_of_games"] or MAX_NUMBER_PER_GAME_EVO != json_converted["number_of_tetrominos_per_game"] :
             print(  'Backups/Evo' + str(numberOfDimenstion) + ": Backup is different, couldn't read from file")
             return False, [], [], 0, ""
 
@@ -59,7 +60,7 @@ class BackupCreator:
         for i in range( len( json_converted["to_check"]) ):
             vec = Vector(numberOfDimenstion)
             vec.v =  json_converted["to_check"][i]["values"]
-            to_check.append( [ vec, 0] )
+            to_check.append( [ i, vec, 0] )
 
         print('Backups/Evo' + str(numberOfDimenstion) + ": Backup Loaded")
         return True, population, to_check, json_converted["generation"], json_converted["date_time"]
@@ -70,22 +71,26 @@ class BackupCreator:
             "date_time"       : evolutionAlgoritm.dateTime,
             "number_of_games" : evolutionAlgoritm.NUMBER_OF_PLAYED_GAMES,
             "population_size" : len(evolutionAlgoritm.population),
-            "number_of_tetrominos_per_game" : MAX_NUMBER_PER_GAME,
+            "number_of_tetrominos_per_game" : MAX_NUMBER_PER_GAME_EVO,
             "mutation_rate"   : evolutionAlgoritm.MUTATION_RATE,
             "population"      : [],
             "to_check"        : []
         }
 
         for i in range( len(evolutionAlgoritm.population) ):
+            if i >= evolutionAlgoritm.POPULATION_SIZE + evolutionAlgoritm.NEW_POPULATION_SIZE: continue
             backup["population"].append( {
                 "score"  : evolutionAlgoritm.population[i][1],
                 "values" : evolutionAlgoritm.population[i][0].v
             })
 
-        for i in range( len(evolutionAlgoritm.population) ):
+        for i in range( len(evolutionAlgoritm.unchecked_population) ):
+            if i >= evolutionAlgoritm.NEW_POPULATION_SIZE: continue
             backup["to_check"].append( {
-                "values"  : evolutionAlgoritm.population[i][0].v
+                "values"  : evolutionAlgoritm.unchecked_population[i][1].v
             })
+
+        print( len(backup["population"]), len(backup["to_check"]) )
 
         with open('Backups/Evo' + str(evolutionAlgoritm.EVOLUTION_VECTOR_DIMENSIONS) + '.json', 'w') as outfile:
             json.dump(backup, outfile, indent=4)
@@ -95,7 +100,7 @@ class BackupCreator:
         with open('Backups/PSO' + str(numberOfDimenstion) + '.json', 'r') as json_file:
             json_converted = json.loads(json_file.read())
 
-        if sizeOfPopulation != json_converted["particles_number"]:
+        if sizeOfPopulation != json_converted["particles_number"] or MAX_NUMBER_PER_GAME_PSO != json_converted["number_of_tetrominos_per_game"]:
             print(  'Backups/PSO' + str(numberOfDimenstion) + ": Backup is different, couldn't read from file")
             return False, [], 0, "", 0, None, 0
 
@@ -140,7 +145,7 @@ class BackupCreator:
             "best_particle_pos" : bestParticlePosition.v,
             "best_score"        : bestScore,
             "particles_number"  : len(particles),
-            "number_of_tetrominos_per_game" : MAX_NUMBER_PER_GAME,
+            "number_of_tetrominos_per_game" : MAX_NUMBER_PER_GAME_PSO,
             "particles"        : self.particles[ numberOfDimenstions ]
         }
 

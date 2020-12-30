@@ -15,7 +15,7 @@ import random
 
 class NeuralNetwork:
     LEARNING_DELAY = 5
-    BUFFOR_SIZE    = 4000
+    BUFFOR_SIZE    = 10000
     delay = 0
     dateTime = ""
 
@@ -46,7 +46,7 @@ class NeuralNetwork:
         self.epsilon_min    = 0
         self.epsilon_decay  = 0.002
 
-        if not replay_start_size: replay_start_size  = self.BUFFOR_SIZE/2
+        if not replay_start_size: replay_start_size = self.BUFFOR_SIZE/2
         self.replay_start_size = replay_start_size
 
 

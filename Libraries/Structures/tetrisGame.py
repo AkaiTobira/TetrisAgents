@@ -79,7 +79,7 @@ class Tetris:
             self.spawner.get_next()
             self.score = self.logic.score
             self.number_of_tetrominos += 1
-        if self.logic.game_over() or ( self.number_of_tetrominos > MAX_NUMBER_PER_GAME and self.learning_mode ): 
+        if self.logic.game_over() or ( self.learning_mode and self.number_of_tetrominos > self.players_controll.get_max_limit()): 
             self.players_controll.game_over_feedback(self.score, self.number_of_tetrominos)
             self.spawner.disable()
             self.is_game_over = True

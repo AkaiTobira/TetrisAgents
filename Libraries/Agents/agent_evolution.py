@@ -20,7 +20,6 @@ class EvolutionAi:
             self.current_values = self.evolution_alg.unchecked_population[0][1]
         else:
             self.isLocked = True
-            print( "EvolutionAgent", numberOfDimenstions, " Loaded best for presenter app :" + str(predefined_values) )
             self.current_values = predefined_values
 
     def try_fit(self, x_pos, t, grid):
