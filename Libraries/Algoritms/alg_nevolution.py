@@ -34,7 +34,7 @@ class NeuralEvolution:
         end = time.time()
         self.unchecked_population[0][2] += score
         self.moves.write( str(len( self.unchecked_population )) + "#" + str(self.unchecked_population[0][0]) + "#" + str(self.unchecked_population[0][1]) + "#" + str(self.unchecked_population[0][2]) + "#" + str((cleaned/5.0))[:5] + "%#" + str(end - self.start) + "\n" )
-        print( len( self.unchecked_population ), self.unchecked_population[0][0], self.unchecked_population[0][1], self.unchecked_population[0][2], str((cleaned/5.0))[:5] + "%" )
+    #    print( len( self.unchecked_population ), self.unchecked_population[0][0], self.unchecked_population[0][1], self.unchecked_population[0][2], str((cleaned/5.0))[:5] + "%" )
         self.start = end
 
     def get_next_active(self):
@@ -51,7 +51,7 @@ class NeuralEvolution:
         index = self.unchecked_population[0][0]
         if self.unchecked_population[0][2] >= self.population[index][1]: 
             self.moves.write( "Replaced#"+ str(self.unchecked_population[0][2]) + "#" + str(self.population[index][1]) + "#" + str(index)  + "\n" )
-            print( "Replaced", self.unchecked_population[0][2], self.population[index][1], index, )
+        #    print( "Replaced", self.unchecked_population[0][2], self.population[index][1], index, )
             self.population[index] = [ self.unchecked_population[0][1], self.unchecked_population[0][2] ]
         self.unchecked_population = self.unchecked_population[1:]
 
@@ -122,7 +122,7 @@ class NeuralEvolution:
             
     def fit(self):
         self.moves.write(" FIT CALLED " + "\n")
-        print(" FIT CALLED ")
+        #print(" FIT CALLED ")
         new_generation = 0
         self.sort()
 

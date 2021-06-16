@@ -24,12 +24,13 @@ class ReinforcmentNetwork:
     rewards        = {}
     previous_state = [0,0,0,0,0,0]
     current_state  = [0,0,0,0,0,0]
-
+    spawnerType    =  -1
     scores         = []
 
-    def __init__(self, loadedModel = None):
-        if( loadedModel == None): self.nn = NeuralNetwork( 6 )
-        else: self.nn = NeuralNetworkFixed( loadedModel, 6 )
+    def __init__(self, loadedModel = None, spawnerType = 0):
+        self.spawnerType = spawnerType
+        if( loadedModel == None): self.nn = NeuralNetwork( 7, spawnerType=spawnerType)
+        else: self.nn = NeuralNetworkFixed( loadedModel, 7)
 
     def try_fit(self, x_pos, t, grid):
         t.position[0] = x_pos
@@ -39,16 +40,19 @@ class ReinforcmentNetwork:
             if not t.is_valid(grid):
                 t.position[1] -= 1
                 grid.lock(t, get_color(Colors.GOLD))
-                return self.evaulate(grid), grid.clearedRow
+                return self.evaulate(t, grid), grid.clearedRow
 
-    def evaulate(self, grid):
-        return [ grid.maxColumn, 
-                 grid.sumHeight, 
-                 grid.sumHoles , 
-                 grid.bumpiness,
-                 grid.clearedRow,
-                 grid.biggestWheel
-                ]
+    def evaulate(self, t, grid):
+
+        return ( grid.vTransitions, 
+                 grid.hTransitions , 
+                 grid.sumHoles     , 
+                 grid.bumpiness    ,
+                 grid.clearedRow   ,
+                 t.position[1]     ,
+                 grid.sumWheel     
+                )
+
 
     def next_move(self, t, grid, _unsed):
         grid = grid.get_grid()
@@ -112,7 +116,7 @@ class ReinforcmentNetwork:
 
         if sss > self.bestScore: 
             self.nn.model.save(DATE_TIME)
-            BestUnitsBackupSaver.saveNeuralNetwork(sss, self.nn.model)
+            BestUnitsBackupSaver.saveNeuralNetwork( "NeuralNetwork"+ str(self.spawnerType), sss, self.nn.model)
             self.bestScore = sss
 
         print("New score :", score, "cleaned :", cleaned, "Best Score :", self.bestScore)

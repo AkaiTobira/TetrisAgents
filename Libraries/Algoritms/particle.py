@@ -25,7 +25,7 @@ class Particle:
 
     def move(self, team_best_pos, w, c1, c2):
         change = w * self.dir_v 
-        print( w )
+    #    print( w )
         change += c1*uniform(0.0,1.0)*( self.best_pos - self.pos_v ) 
         change += c2*uniform(0.0,1.0)*( team_best_pos - self.pos_v )
         self.dir_v = change.norm()

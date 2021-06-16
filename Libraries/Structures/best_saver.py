@@ -15,20 +15,23 @@ class BestUnitSaver:
         #self.printFile()
 
 
-    def saveNeuralNetwork(self, score, model):
-        if score > self.json_converted["NeuralNetwork"]["score"]["combined"] :
-            self.json_converted["NeuralNetwork"] = { 
-                "body"  : "BestNeuralNetwork", 
+    def saveNeuralNetwork(self, name, score, model):
+        if (not name in self.json_converted) or score > self.json_converted[name]["score"]["combined"] :
+            print("Found better in : " + name + " with score " + str(score))
+            self.json_converted[name] = { 
+                "body"  : "Best" + name, 
                 "score" : { "combined"     : score,
                             "cleared_rows" : int(score/ROW_MULTIPLER), 
                             "cleared_tetrimino" : int(score%ROW_MULTIPLER)}
             }
-            model.save("BestNeuralNetwork")
+            model.save("Best" + name)
             self.saveDump()
 
     def saveScore(self, name, value, score):
 
-        if( score > self.json_converted[name]["score"]["combined"] ):
+        if( (not name in self.json_converted) or score > self.json_converted[name]["score"]["combined"] ):
+            print("Found better in : " + name + " with score " + str(score))
+
             self.json_converted[name] = { "body"   : list(value), 
                                         "score" : { "combined"     : score,
                                                     "cleared_rows" : int(score/ROW_MULTIPLER), 

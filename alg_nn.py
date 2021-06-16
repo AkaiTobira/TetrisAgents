@@ -86,7 +86,7 @@ class NeuralNetwork:
     def train(self, batch_size=32, epochs=3):
         n = len(self.memory)
     
-        print( n )
+        #print( n )
 
         if n >= self.replay_start_size and n >= batch_size:
 
@@ -113,7 +113,7 @@ class NeuralNetwork:
             # Fit the model to the given values
             self.model.fit(np.array(x), np.array(y), batch_size=batch_size, epochs=epochs, verbose=0)
 
-            print( "FIT CALLED")
+            #print( "FIT CALLED")
 
             # Update the exploration variable
             if self.epsilon > self.epsilon_min:

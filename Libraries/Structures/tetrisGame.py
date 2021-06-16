@@ -31,7 +31,7 @@ class Tetris:
     AI_moveSelceted = False
 
     def __init__(self, screen, position, spawner, playerlist, learning_mode = True):
-        self.spawner          = spawner
+        self.spawner          = playerlist.get_spawner()
         self.logic            = TetrisLogic()
         self.players_controll = playerlist
         self.displayers       = TetrisDisplayers(screen, position, self.logic.get_grid() )
@@ -87,7 +87,9 @@ class Tetris:
     def process(self, event):
         self.flow_controll.process(event)
         self.players_controll.process(event)
-        if self.players_controll.player_changed(): self.reset()
+        if self.players_controll.player_changed(): 
+            self.spawner = self.players_controll.get_spawner()
+            self.reset()
         self.displayers.process(event)
 
         if not self.players_controll.is_AI_Player():

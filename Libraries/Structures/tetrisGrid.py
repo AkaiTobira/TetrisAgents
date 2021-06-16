@@ -17,6 +17,11 @@ class TetrisGrid:
     sumHeight    = 0
     sumHoles     = 0
     bumpiness    = 0
+    hTransitions = 0
+    fullSquares  = 0
+    avgHeight    = 0
+    sumWheel     = 0
+    bumpinessHeight = 0
 
     def __init__(self, to_duplicate = None):
         self.grid = []
@@ -26,8 +31,25 @@ class TetrisGrid:
                 row.append( 0  if to_duplicate == None or to_duplicate.grid[i][j] == 0 else 99 )
             self.grid.append(row)
 
-        self.heights    = [0,0,0,0,0,0,0,0,0,0]
-        self.holes      = [0,0,0,0,0,0,0,0,0,0]
+        self.heights     = [0,0,0,0,0,0,0,0,0,0]
+        self.holes       = [0,0,0,0,0,0,0,0,0,0]
+
+        self.clearedRow   = 0
+        self.maxColumn    = 0
+        self.sumHeight    = 0
+        self.sumHoles     = 0
+        self.avgHeight    = 0
+        self.bumpiness    = 0
+        self.biggestWheel = 0
+        self.hTransitions = 0
+        self.vTransitions = 0
+        self.fullSquares  = 0
+        self.sumWheel     = 0
+        self.diffColumn   = 0
+        self.minColumn    = 0
+        self.maxColumn    = 0
+        self.sumHoles2    = 0
+        self.bumpinessHeight = 0
 
     def clone(self):
         t = TetrisGrid( self )
@@ -35,17 +57,30 @@ class TetrisGrid:
         t.holes = self.holes.copy()
         t.heights = self.heights.copy()
 
-        t.clearedRow = self.clearedRow
-        t.maxColumn  = self.maxColumn
-        t.sumHeight  = self.sumHeight
-        t.sumHoles   = self.sumHoles
-        t.bumpiness  = self.bumpiness
+        t.clearedRow   = self.clearedRow
+        t.maxColumn    = self.maxColumn
+        t.sumHeight    = self.sumHeight
+        t.avgHeight    = self.avgHeight
+        t.sumHoles     = self.sumHoles
+        t.sumHoles2    = self.sumHoles2
+        t.bumpiness    = self.bumpiness
         t.biggestWheel = self.biggestWheel
+        t.hTransitions = self.hTransitions
+        t.fullSquares  = self.fullSquares
+        t.sumWheel     = self.sumWheel
+        t.vTransitions = self.vTransitions
+        t.maxColumn  = self.maxColumn 
+        t.minColumn  = self.minColumn
+        t.diffColumn = self.diffColumn 
+        t.bumpinessHeight = self.bumpinessHeight
 
+        
         return t        
 
     def __evaluate(self, tetromino):
         self.clearedRow = self.clear_full_rows(tetromino.position, tetromino.get_size())
+        self.hTransitions = 0
+        self.fullSquares += (4 - self.clearedRow*GRID_WIDTH)
 
         for i, row in enumerate( self.grid ):
             for j, value in enumerate( row ):
@@ -55,28 +90,65 @@ class TetrisGrid:
 
         for i, row in enumerate( self.grid ):
             self.holes[i] = 0
+            found = False
             for j in RANGE_0_GRID_HEIGHT_M1:
-                if row[j] != 0 and row[j+1] == 0:
-                    self.holes[i] += 1
+                value  = row[j]
+                value2 = row[j+1]
 
-        self.maxColumn = max(self.heights)
-        self.sumHeight = sum(self.heights)*0.1
-        self.sumHoles  = sum(self.holes)
+                if value != 0: found = True
+                if value == 0 and found: self.sumHoles2 += 1
+                if value != 0 and value2 == 0:
+                    self.holes[i] += 1
+                    self.vTransitions += 1
+                elif value == 0 and value2 != 0:
+                    self.vTransitions += 1
+
+        for i, row in enumerate( self.grid ):
+            if i == GRID_WIDTH - 1: continue
+            nextRow = self.grid[i+1]
+            for j in RANGE_0_GRID_WIDTH_M1:
+                if row[j] != 0 and nextRow[j] == 0:
+                    self.hTransitions += 1
+                elif row[j] == 0 and nextRow[j] != 0:
+                    self.hTransitions += 1
+
+        self.maxColumn  = max(self.heights)
+        self.minColumn  = min(self.heights)
+        self.diffColumn = self.maxColumn - self.minColumn
+        self.sumHeight  = sum(self.heights)
+        self.avgHeight  = self.sumHeight*0.1
+        self.sumHoles   = sum(self.holes)
         self.bumpiness    = 0
         self.biggestWheel = 0
+        self.sumWheel = 0
 
-        bump_prev = 0
-        bump      = 0
+
+        self.bumpinessHeight  = (self.heights[0] - self.minColumn) * 5 + (self.heights[1] - self.minColumn) * 4 
+        self.bumpinessHeight += (self.heights[2] - self.minColumn) * 3 + (self.heights[3] - self.minColumn) * 2 
+        self.bumpinessHeight += (self.heights[4] - self.minColumn) * 1 + (self.heights[5] - self.minColumn) * 1 
+        self.bumpinessHeight += (self.heights[6] - self.minColumn) * 2 + (self.heights[7] - self.minColumn) * 3 
+        self.bumpinessHeight += (self.heights[8] - self.minColumn) * 4 + (self.heights[9] - self.minColumn) * 5 
+        self.bumpinessHeight /= GRID_WIDTH
+        #self.bumpinessHeight = (self.sumHeight - GRID_WIDTH*self.minColumn)/GRID_WIDTH
+
         for i in RANGE_0_GRID_WIDTH_M1:
-            self.bumpiness += math.fabs( self.heights[i] - self.heights[i+1] )
+
+            height_i = self.heights[i]
+            height_i_1 = self.heights[i+1]
+
+            self.bumpiness += math.fabs( height_i - height_i_1 ) 
 
             if i == 0:
                 self.biggestWheel = self.heights[1] - self.heights[0]
+                self.sumWheel += self.biggestWheel
             else:
-                value =  (self.heights[i+1] + self.heights[i-1] - (2.0 *self.heights[i])) * 0.5
+                value =  (height_i_1 + self.heights[i-1] - (2.0 *height_i)) * 0.5
                 self.biggestWheel = max( self.biggestWheel, value)
+                self.sumWheel += value
 
-        self.biggestWheel = max( self.biggestWheel,  self.heights[8] - self.heights[9] )
+        value2 = self.heights[8] - self.heights[9]
+        self.biggestWheel = max( self.biggestWheel,  value2 )
+        self.sumWheel += value2
 
     def lock(self, tetromino, color=(255,215,0)):
         shape_size = tetromino.get_size()

@@ -4,7 +4,7 @@ import time
 from Libraries.consts                      import *
 from Libraries.Structures.tetrisGame       import Tetris
 from Libraries.Structures.displayers       import FPSDisplayer
-from Libraries.Structures.tetrominoSpawner import RandomSpawnTetromino
+from Libraries.Structures.tetrominoSpawner import RandomSpawnTetromino, SimpleSpawnTetrimino
 from Libraries.Structures.playerList       import PlymodeController
 from Libraries.Structures.meansures        import Meansures
 
@@ -25,7 +25,7 @@ class Game:
         self.name = name
         self.resolution  = resolution
         self.reset_resolution()
-        self.tetris  = Tetris(self.screen, [OFFSET/2 + 6, OFFSET/2 +6], RandomSpawnTetromino(), PlymodeController())
+        self.tetris  = Tetris(self.screen, [OFFSET/2 + 6, OFFSET/2 +6], SimpleSpawnTetrimino(), PlymodeController())
         self.fpsRate = FPSDisplayer (self.screen, [ OFFSET/2 + 6 + 100, OFFSET/2 +6 + (GRID_HEIGHT + 15) * SQUARE_SIZE ])
 
     def is_running(self):

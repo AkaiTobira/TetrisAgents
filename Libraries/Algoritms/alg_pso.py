@@ -14,6 +14,7 @@ class PSO:
     best_score = -999999
     best_pos   = None
 
+    NUMBER_OF_PLAYED_GAMES = 2
     POPULATION_SIZE = 0
     index           = 0
     iteraiton       = 0
@@ -26,20 +27,22 @@ class PSO:
     file_name_avg  = ""
     file_name_pop  = ""
 
-    VECTOR_DIMENSIONS = 4
+    VECTOR_DIMENSIONS = 10
 
     logs_registered = False
     dateTime        = ""
+    spawnerId = 0
 
-    def __init__(self, vector_dimensions, population_size,  numberOfIteration=500):
+    def __init__(self, vector_dimensions, population_size,  numberOfIteration=500, spawnerId = 0):
         self.logs_registered = False
         self.VECTOR_DIMENSIONS = vector_dimensions
         self.POPULATION_SIZE = population_size
         self.max_iteration   = numberOfIteration
         self.particles = []
-        Meansures.register_meansure("GenerationProcessingPSO")
+        self.spawnerId = spawnerId
+        Meansures.register_meansure("GenerationProcessingPSO" + str(spawnerId))
 
-        self.continueSyle, self.particles, self.iteraiton, self.dateTime, self.index, self.best_pos, self.best_score = Backup.load_pso( self.VECTOR_DIMENSIONS, self.POPULATION_SIZE)
+        self.continueSyle, self.particles, self.iteraiton, self.dateTime, self.index, self.best_pos, self.best_score = Backup.load_pso( self.VECTOR_DIMENSIONS, self.POPULATION_SIZE, spawnerId)
 
         if not self.continueSyle:
             self.dateTime = DATE_TIME
@@ -57,9 +60,9 @@ class PSO:
         return s
 
     def register_logs(self):
-        self.file_name_best = "PSO" + str(self.VECTOR_DIMENSIONS) + "_best_change"
-        self.file_name_avg  = "PSO" + str(self.VECTOR_DIMENSIONS) + "_avrg_change"
-        self.file_name_pop   ="PSO" + str(self.VECTOR_DIMENSIONS) + "_populations"
+        self.file_name_best = "PSO" + str(self.VECTOR_DIMENSIONS) + "_" + str(self.spawnerId) + "_best_change"
+        self.file_name_avg  = "PSO" + str(self.VECTOR_DIMENSIONS) + "_" + str(self.spawnerId) + "_avrg_change"
+        self.file_name_pop   ="PSO" + str(self.VECTOR_DIMENSIONS) + "_" + str(self.spawnerId) + "_populations"
         LoggerInstance.register_log( self.file_name_best, self.dateTime, "pso", continueSyle=self.continueSyle)
         LoggerInstance.register_log( self.file_name_avg,  self.dateTime, "pso", continueSyle=self.continueSyle)
         LoggerInstance.register_log( self.file_name_pop,  self.dateTime, "pso", continueSyle=self.continueSyle)
@@ -69,14 +72,14 @@ class PSO:
             self.register_logs()
             self.logs_registered = True
 
-        BestUnitsBackupSaver.saveScore("PSO" + str(self.VECTOR_DIMENSIONS), self.best_pos, self.best_score )
+        BestUnitsBackupSaver.saveScore("PSO" + str(self.VECTOR_DIMENSIONS) + "_" + str(self.spawnerId), self.best_pos, self.best_score )
 
         avrg = 0.0
         for i in range( self.POPULATION_SIZE ):
             avrg += self.particles[i].curr_score
         avrg /= self.POPULATION_SIZE
 
-        LoggerInstance.log( self.file_name_avg, str(self.iteraiton) + ", " + str(avrg) + ", " + str(Meansures.lap_meansure("GenerationProcessingPSO")))
+        LoggerInstance.log( self.file_name_avg, str(self.iteraiton) + ", " + str(avrg) + ", " + str(Meansures.lap_meansure("GenerationProcessingPSO" + str(self.spawnerId))))
         LoggerInstance.log( self.file_name_pop, str(self))
         LoggerInstance.log( self.file_name_pop, "#################################" )
 
@@ -90,15 +93,19 @@ class PSO:
         if self.iteraiton == self.max_iteration:
             return self.best_pos
 
-        print( str(self.index), str(self.particles[self.index].pos_v), str(score), str((cleaned/MAX_NUMBER_PER_GAME_PSO * 100.0 ))[:6] + "%" )
-
-        if self.numberOfPlayedGames < 4:
-            self.numberOfPlayedGames += 1
-            if self.numberOfPlayedGames == 1:
-                self.particles[self.index].curr_score = 0
+        #print( str(self.index), str(self.particles[self.index].pos_v), str(score), str((cleaned/MAX_NUMBER_PER_GAME_PSO * 100.0 ))[:6] + "%" )
+        
+        if self.numberOfPlayedGames < self.NUMBER_OF_PLAYED_GAMES:
             self.particles[self.index].curr_score += score * ROW_MULTIPLER + cleaned
+            self.numberOfPlayedGames += 1
             return self.particles[self.index].pos_v
         self.numberOfPlayedGames = 0
+
+        maxScore     = int(self.particles[self.index].curr_score / ROW_MULTIPLER)
+        maxTetrimino = int((self.particles[self.index].curr_score - maxScore) / self.NUMBER_OF_PLAYED_GAMES)
+        maxScore     = int(maxScore/self.NUMBER_OF_PLAYED_GAMES)
+        
+        self.particles[self.index].curr_score = maxScore * ROW_MULTIPLER + maxTetrimino
 
         if self.particles[self.index].curr_score > self.particles[self.index].best_score: 
             self.particles[self.index].update_best(self.particles[self.index].curr_score)
@@ -108,6 +115,7 @@ class PSO:
             self.best_pos   = self.particles[self.index].best_pos
         
         self.particles[self.index].move(self.best_pos, self.ineria, 1.5,1)
+        self.particles[self.index].curr_score = 0
 
         self.index += 1
         if self.index == self.POPULATION_SIZE: 
@@ -118,6 +126,6 @@ class PSO:
             print( "Iteration ", self.iteraiton, " out of ", self.max_iteration)
             self.logInfo()
 
-        Backup.save_pso(self.particles, self.index, self.best_pos, self.best_score, self.iteraiton, self.dateTime, self.VECTOR_DIMENSIONS)
+        Backup.save_pso(self.particles,  self.index, self.best_pos, self.best_score, self.iteraiton, self.dateTime, self.VECTOR_DIMENSIONS, self.spawnerId)
 
         return self.particles[self.index].pos_v

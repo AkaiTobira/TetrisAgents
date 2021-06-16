@@ -11,16 +11,17 @@ class PSOAi:
     hights = [0,0,0,0,0,0,0,0,0,0]
     holes  = [0,0,0,0,0,0,0,0,0,0]
 
-    vector_dim = 4
+    vector_dim = 10
 
-    def __init__(self, predefined_values = None, vectorDimensions = 4, populationSize=50, numberOfIteration=100):
+    def __init__(self, predefined_values = None, vectorDimensions = 10, spawnerId = 0, populationSize=50, numberOfIteration=100):
         self.vector_dim = vectorDimensions
         if( predefined_values == None):
-            self.pso_alg        = PSO(vectorDimensions, int(vectorDimensions * vectorDimensions * 1.7), numberOfIteration)
+            self.pso_alg        = PSO(vectorDimensions, int(vectorDimensions * vectorDimensions * 1.7), numberOfIteration, spawnerId)
             self.current_values = self.pso_alg.particles[0].pos_v
         else:
             print( "PSOAgent", vectorDimensions, " Loaded best for presenter app :" + str(predefined_values) )
             self.current_values = predefined_values
+            self.vector_dim = len(predefined_values)
 
     def try_fit(self, x_pos, t, grid):
         t.position[0] = x_pos
@@ -30,9 +31,9 @@ class PSOAi:
             if not t.is_valid(grid):
                 t.position[1] -= 1
                 grid.lock(t, get_color(Colors.GOLD))
-                return self.evaulate(grid)
+                return self.evaulate(grid, t)
 
-    def evaulate(self, grid):
+    def evaulate(self, grid, t):
         if self.vector_dim == 4:
             return ( grid.biggestWheel * self.current_values[0] + 
                     grid.sumHeight * self.current_values[1] + 
@@ -47,12 +48,33 @@ class PSOAi:
                     grid.biggestWheel * self.current_values[4]
                     )
         if  self.vector_dim == 6:
-            return ( grid.maxColumn * self.current_values[0] + 
-                    grid.sumHeight * self.current_values[1] + 
+            return ( grid.vTransitions * self.current_values[0] + 
+                    grid.avgHeight * self.current_values[1] + 
+                    grid.sumHoles2  * self.current_values[2] + 
+                    grid.bumpiness * self.current_values[3] +
+                    grid.bumpinessHeight * self.current_values[4] +
+                    (GRID_HEIGHT - t.position[1])  * self.current_values[5]
+                    )
+        if  self.vector_dim == 7:
+            return ( grid.vTransitions * self.current_values[0] + 
+                    grid.hTransitions * self.current_values[1] + 
                     grid.sumHoles  * self.current_values[2] + 
                     grid.bumpiness * self.current_values[3] +
                     grid.clearedRow * self.current_values[4] +
-                    grid.biggestWheel * self.current_values[5]
+                    t.position[1]  * self.current_values[5] +
+                    grid.sumWheel * self.current_values[6]
+                    )
+        if self.vector_dim == 10:
+            return ( grid.maxColumn   * self.current_values[0] + 
+                    grid.sumHeight    * self.current_values[1] + 
+                    grid.sumHoles     * self.current_values[2] + 
+                    grid.bumpiness    * self.current_values[3] +
+                    grid.clearedRow   * self.current_values[4] +
+                    grid.biggestWheel * self.current_values[5] +
+                    grid.hTransitions * self.current_values[6] +
+                    t.position[1]     * self.current_values[7] +
+                    grid.avgHeight    * self.current_values[8] +
+                    grid.fullSquares  * self.current_values[9]
                     )
 
     def next_move(self, t, grid, _unused):
@@ -71,5 +93,5 @@ class PSOAi:
 
     def game_over_feedback(self, score, cleaned):
         if self.pso_alg == None: return
-    #    self.pso_alg.add_score(score, cleaned)
+        #self.pso_alg.add_score(score, cleaned)
         self.current_values = self.pso_alg.get_next_to_check(score, cleaned)

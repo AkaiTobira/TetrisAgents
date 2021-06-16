@@ -5,23 +5,34 @@ import enum
 from Libraries.Structures.tetrisGame import Tetris
 from Libraries.game import Game
 from Libraries.presenter import Presenter
+from Libraries.tester import Tester
 from Libraries.consts    import *
 
 class GameState(Enum):
     LearningApp = 1,
-    PresentingApp = 2
+    PresentingApp = 2,
+    TestingApp = 3,
 
 class StateChanger:
     activeApp    = None
-    inactiveApp  = None
+    apps = {}
 
     def get_state(self, state):
         if state == GameState.LearningApp:
-            if self.activeApp == None: self.activeApp = Game((250,860), "Tetris")
+            if not 1 in self.apps.keys():
+                self.apps[1] = Game((250,860), "Tetris")
+            self.activeApp = self.apps[1]
+            return self.activeApp
+        if state == GameState.TestingApp:
+            if not 3 in self.apps.keys():
+                self.apps[3] = Tester((250,860), "Tetris")
+            self.activeApp = self.apps[3]
             return self.activeApp
         if state == GameState.PresentingApp:
-            if self.inactiveApp == None: self.inactiveApp  = Presenter((int(1300 * NUMBER_OF_SCREENS/5.0) ,860), "Tetris")
-            return self.inactiveApp
+            if not 2 in self.apps.keys():
+                self.apps[2] = Presenter((int(1300 * NUMBER_OF_SCREENS/5.0) ,860), "Tetris")
+            self.activeApp = self.apps[2]
+            return self.activeApp
 
 class GameMaster:
     stateSwitcher = None
@@ -46,8 +57,16 @@ class GameMaster:
 
     def process_change_app(self, event):
         if event.type == pygame.KEYUP:
+            last_state = self.activeState
             if event.key == AppKeys.ChangeScreen:
-                self.change_app()
+                self.activeState = GameState.LearningApp
+            if event.key == AppKeys.ChangeScreen2:
+                self.activeState = GameState.PresentingApp
+            if event.key == AppKeys.ChangeScreen3:
+                self.activeState = GameState.TestingApp
+            if last_state != self.activeState:
+                self.activeScreen  = self.stateSwitcher.get_state(self.activeState)
+                self.activeScreen.reset_resolution()
 
     def update(self, delta):
         self.activeScreen.update(delta)
@@ -57,13 +76,3 @@ class GameMaster:
 
     def is_running(self):
         return self.running
-
-    def change_app(self):
-        if self.activeState == GameState.LearningApp:
-            self.activeState = GameState.PresentingApp
-
-        elif self.activeState == GameState.PresentingApp:
-            self.activeState = GameState.LearningApp
-
-        self.activeScreen  = self.stateSwitcher.get_state(self.activeState)
-        self.activeScreen.reset_resolution()

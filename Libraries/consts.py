@@ -4,14 +4,14 @@ GRID_HEIGHT = 22
 GRID_WIDTH  = 10
 FONT_SIZE   = 19
 NUM_OF_EPOCh= 150
-ROW_MULTIPLER = 100000000000
+ROW_MULTIPLER = 1000000
 
 MAX_NUMBER_PER_GAME_HUM = 100000
-MAX_NUMBER_PER_GAME_EVO = 10000
-MAX_NUMBER_PER_GAME_PSO = 50000
-MAX_NUMBER_PER_GAME_NN  = 100000
+MAX_NUMBER_PER_GAME_EVO = 2000
+MAX_NUMBER_PER_GAME_PSO = 300000
+MAX_NUMBER_PER_GAME_NN  = 300000
 
-NUMBER_OF_SCREENS = 5
+NUMBER_OF_SCREENS = 2
 
 RANGE_0_GRID_WIDTH     = range(0, GRID_WIDTH)
 RANGE_0_GRID_HEIGHT    = range(0, GRID_HEIGHT)
@@ -37,8 +37,8 @@ DATE_TIME =  str(DATE_TIME.day) + "-" + str(DATE_TIME.month) + "-" + str(DATE_TI
 
 import collections
 _KeysTuple = collections.namedtuple('AppKeys', 
-                        ['ChangeScreen', "SetTimerInfinity", "SetTimerZero", "SetTimerOne", "SetTimerFastButSeen", "ToggleStatsDraw", "RotateLeft", "RotateRight",   "MoveRight",    "MoveLeft",  "DropDown", "SwichVisibility"])
-AppKeys = _KeysTuple(      pygame.K_F1 ,        pygame.K_z ,    pygame.K_p ,   pygame.K_x,  pygame.K_g, pygame.K_s, pygame.K_DOWN,  pygame.K_UP, pygame.K_RIGHT, pygame.K_LEFT,   pygame.K_SPACE, pygame.K_q )
+                        ['ChangeScreen', 'ChangeScreen2', 'ChangeScreen3', "SetTimerInfinity", "SetTimerZero", "SetTimerOne", "SetTimerFastButSeen", "ToggleStatsDraw", "RotateLeft", "RotateRight",   "MoveRight",    "MoveLeft",  "DropDown", "SwichVisibility"])
+AppKeys = _KeysTuple(      pygame.K_F1 ,   pygame.K_F2 ,    pygame.K_F3 ,   pygame.K_z ,    pygame.K_p ,   pygame.K_x,  pygame.K_g, pygame.K_s, pygame.K_DOWN,  pygame.K_UP, pygame.K_RIGHT, pygame.K_LEFT,   pygame.K_SPACE, pygame.K_q )
 
 class Colors(Enum):
 	LIGHT_BLUE   = 1

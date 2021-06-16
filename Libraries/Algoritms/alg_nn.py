@@ -1,7 +1,7 @@
 from random import uniform, randint
 from math   import sqrt
 from copy   import deepcopy
-from Libraries.consts import DATE_TIME
+from Libraries.consts import DATE_TIME, ROW_MULTIPLER
 
 from Libraries.vector import Vector
 
@@ -15,11 +15,12 @@ import random
 
 class NeuralNetwork:
     LEARNING_DELAY = 5
-    BUFFOR_SIZE    = 10000
+    BUFFOR_SIZE    = 1028
     delay = 0
+    spawnerType = 0
     dateTime = ""
 
-    def __init__(self, state_size, replay_start_size=None):
+    def __init__(self, state_size, replay_start_size=None, spawnerType = 0):
         self.n_neurons      = [32, 32, 32]
         self.activations    = ['relu', 'relu', 'relu', 'linear']
         self.loss           = 'mse'
@@ -28,7 +29,8 @@ class NeuralNetwork:
         assert len(self.activations) == len(self.n_neurons) + 1
 
         self.state_size     = state_size
-        can_continue, model, memory, discount, epsilon, dateTime = Backup.load_neural_network(state_size)
+        self.spawnerType = spawnerType
+        can_continue, model, memory, discount, epsilon, dateTime = Backup.load_neural_network(state_size, spawnerType)
 
         if can_continue:
             self.model    = model
@@ -36,6 +38,8 @@ class NeuralNetwork:
             self.discount = discount
             self.epsilon  = epsilon
             self.dateTime = dateTime
+
+        #    print(self.memory[0])
         else:
             self.memory    = deque(maxlen=self.BUFFOR_SIZE)
             self.model     = self._build_model()
@@ -64,7 +68,23 @@ class NeuralNetwork:
         return model
 
     def add_to_memory(self, current_state, next_state, reward, done):
-        self.memory.append((current_state, next_state, reward, done))
+        if len(current_state) != self.state_size: return
+
+        if done == False:
+            can_add = True
+            if reward >= ROW_MULTIPLER : pass
+            elif current_state[2] > next_state[2] : pass
+            else : can_add = False
+
+            if not can_add: return
+
+        if len(self.memory) == self.BUFFOR_SIZE:
+            removable = self.memory[0]
+            if self.epsilon > 0: self.memory.append(removable)
+
+        self.memory.append((current_state, next_state, reward if not done else -1000, done))
+      #  
+       # print((current_state, next_state, reward, done))
 
     def random_value(self):
         return random.random()
@@ -98,21 +118,26 @@ class NeuralNetwork:
         return best_key
 
 
-    def train(self, batch_size=128, epochs=10):
+    def train(self, batch_size=256, epochs=30):
         n = len(self.memory)
     
-        print( n, self.delay )
+      #  print( n, self.delay )
 
         if n >= self.replay_start_size and n >= batch_size:
             self.delay += 1
             if self.delay < self.LEARNING_DELAY: return
             self.delay = 0
-
+        #    print(len(self.memory))
             batch = random.sample(self.memory, batch_size)
 
             # Get the expected score for the next states, in batch (better performance)
             next_states = np.array([x[1] for x in batch])
+
+           # print( "NextStates " + str(next_states) )
+
             next_qs = [x[0] for x in self.model.predict(next_states)]
+
+           # print( "NextQS " + str(next_qs) )
 
             x = []
             y = []
@@ -128,18 +153,22 @@ class NeuralNetwork:
                 x.append(state)
                 y.append(new_q)
 
+          #  print( "X" + str(x) )
+          #  print( "Y" + str(y) )
+#
             # Fit the model to the given values
             self.model.fit(np.array(x), np.array(y), batch_size=batch_size, epochs=epochs, verbose=0)
 
-            print( "FIT CALLED")
+          #  print( "FIT CALLED")
 
             Backup.save_neural_network(self)
 
             # Update the exploration variable
             if self.epsilon > self.epsilon_min:
                 self.epsilon -= self.epsilon_decay
-
-        
+                self.BUFFOR_SIZE = 1028 + int( (1.0 - self.epsilon)/self.epsilon_decay ) * 5
+                self.memory = deque(maxlen=self.BUFFOR_SIZE, iterable=self.memory)
+               # self.
 
 class NeuralNetworkFixed: 
     model = None

@@ -143,7 +143,7 @@ class HeuresticDisplayer(DisplayerBase):
 
 
     def draw(self):
-        restValues = str(self.grid.sumHeight)[:4] + ", " +str(self.grid.bumpiness) + ", " + str(self.grid.sumHoles) + ", " + str(self.grid.maxColumn) + ", " +str(self.grid.clearedRow)  + ", " + str(self.grid.biggestWheel)
+        restValues = str(self.grid.sumHeight)[:4] + ", " +str(self.grid.bumpiness) + ", " + str(self.grid.sumHoles) + ", " + str(self.grid.maxColumn) + ", " +str(self.grid.clearedRow)  + ", " + str(self.grid.biggestWheel) + ", " + str(self.grid.hTransitions) + ", " + str(self.grid.fullSquares)
 
         self.draw_text( self.grid.heights , [( self.position[0] + self.size*5 ), ( self.position[1] + self.size    )], 9)
         self.draw_text( self.grid.holes , [( self.position[0] + self.size*5 ), ( self.position[1] + self.size + 9)], 9)

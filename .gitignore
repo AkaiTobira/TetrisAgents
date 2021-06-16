@@ -4,5 +4,6 @@ logs/pso/*
 logs/grd/*
 logs/nevo/*
 logs/exp/*
+logs/scores/*
 
 */__pycache__/*

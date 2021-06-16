@@ -11,10 +11,10 @@ from Libraries.Structures.meansures import Meansures
 
 class EvolutionAlgoritm:
 	population             = []
-	POPULATION_SIZE        = 100
+	POPULATION_SIZE        = 170
 	NEW_POPULATION_SIZE    = 35
-	MUTATION_RATE          = 15
-	NUMBER_OF_PLAYED_GAMES = 5
+	MUTATION_RATE          = 42
+	NUMBER_OF_PLAYED_GAMES = 8
 	EVOLUTION_VECTOR_DIMENSIONS = 4
 	curenntly_played_game  = 0
 	start                  = 0
@@ -23,20 +23,22 @@ class EvolutionAlgoritm:
 	dateTime               = ""
 	timer                  = 0
 	contine_writing_logs   = False
+	spawnerType            = 0
 
 	file_name_best =""
 	file_name_avg  =""
 	file_name_pop  =""
 
-	def __init__(self, numberOfDimensions = 4):
+	def __init__(self, numberOfDimensions = 4, spawnerType = -1):
 
 		self.population = []
 		self.unchecked_population = []
+		self.spawnerType = spawnerType
 
 		self.EVOLUTION_VECTOR_DIMENSIONS = numberOfDimensions
-		Meansures.register_meansure("GenerationProcessing")
+		Meansures.register_meansure("GenerationProcessing" + str(spawnerType))
 
-		self.contine_writing_logs, self.population, self.unchecked_population, self.generation, self.dateTime = Backup.load_evolution(self.EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES)
+		self.contine_writing_logs, self.population, self.unchecked_population, self.generation, self.dateTime = Backup.load_evolution(self.EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES, spawnerType)
 
 		if not self.contine_writing_logs:
 			self.dateTime = DATE_TIME
@@ -46,14 +48,16 @@ class EvolutionAlgoritm:
 
 	def createPopulation(self):
 		for i in range(self.POPULATION_SIZE):
-			self.population.append([Vector( self.EVOLUTION_VECTOR_DIMENSIONS, unit=True ), 0])
+			self.population.append([Vector( self.EVOLUTION_VECTOR_DIMENSIONS, unit=False ), 0])
+			#for k in range(len(self.population[i][0].v)):
+			#	self.population[i][0].v[k] = -abs(self.population[i][0].v[k])
 		for i in range( self.POPULATION_SIZE):
 			self.unchecked_population.append( [ i, self.population[i][0], 0 ] )
 
 	def register_logs(self):
-		self.file_name_best = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_best_change"
-		self.file_name_avg  = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_avrg_change"
-		self.file_name_pop   ="EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_populations"
+		self.file_name_best = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_" + str(self.spawnerType) + "_best_change"
+		self.file_name_avg  = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_" + str(self.spawnerType) + "_avrg_change"
+		self.file_name_pop   ="EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_" + str(self.spawnerType) + "_populations"
 
 		LoggerInstance.register_log( self.file_name_best, self.dateTime, "evo", continueSyle=self.contine_writing_logs)
 		LoggerInstance.register_log( self.file_name_avg,  self.dateTime, "evo", continueSyle=self.contine_writing_logs)
@@ -64,7 +68,7 @@ class EvolutionAlgoritm:
 		#end = time.time()
 		self.unchecked_population[0][2] += score + cleaned 
 		#self.moves.write( str(len( self.unchecked_population )) + "#" + str(self.unchecked_population[0][0]) + "#" + str(self.unchecked_population[0][1]) + "#" + str(self.unchecked_population[0][2]) + "#" + str((cleaned/5.0))[:5] + "%#" + str(end - self.start) + "\n" )
-		print( len( self.unchecked_population ), self.unchecked_population[0][0], self.unchecked_population[0][1], self.unchecked_population[0][2], str((cleaned/MAX_NUMBER_PER_GAME_EVO * 100.0 ))[:6] + "%" )
+	#	print( len( self.unchecked_population ), self.unchecked_population[0][0], self.unchecked_population[0][1], self.unchecked_population[0][2], str((cleaned/MAX_NUMBER_PER_GAME_EVO * 100.0 ))[:6] + "%" )
 		#self.start = end
 
 	def get_next_active(self):
@@ -88,7 +92,13 @@ class EvolutionAlgoritm:
 			#print( "Replaced", self.unchecked_population[0][2], self.population[index][1], index, )
 		#	self.population[index] = [ self.unchecked_population[0][1], self.unchecked_population[0][2] ]
 
-		self.population.append([self.unchecked_population[0][1], self.unchecked_population[0][2]])
+		score = int(self.unchecked_population[0][2] / ROW_MULTIPLER)
+		lines = self.unchecked_population[0][2] - (score*ROW_MULTIPLER)
+
+		score = int(score/self.NUMBER_OF_PLAYED_GAMES)
+		lines = int(lines/self.NUMBER_OF_PLAYED_GAMES)
+
+		self.population.append([self.unchecked_population[0][1], score * ROW_MULTIPLER + lines])
 		self.unchecked_population = self.unchecked_population[1:]
 
 	def __str__(self):
@@ -176,7 +186,7 @@ class EvolutionAlgoritm:
 #			new_generation.append(self.crossover(t))
 #		self.population =  self.population[0:(self.POPULATION_SIZE - int(0.3*self.POPULATION_SIZE))] + new_generation
 		
-		for i in range(int(0.05*self.POPULATION_SIZE)):
+		for i in range(int(0.1*self.POPULATION_SIZE)):
 			self.unchecked_population.append([ self.POPULATION_SIZE-i-1, Vector(self.EVOLUTION_VECTOR_DIMENSIONS, unit=True), 0 ] )
 
 		self.unchecked_population = self.unchecked_population[:self.NEW_POPULATION_SIZE]
@@ -189,16 +199,22 @@ class EvolutionAlgoritm:
 
 
 	def logInfo(self):
-		BestUnitsBackupSaver.saveScore("Evolution" + str(self.EVOLUTION_VECTOR_DIMENSIONS), self.population[0][0], self.population[0][1] )
+		BestUnitsBackupSaver.saveScore("Evolution" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_" + str(self.spawnerType), self.population[0][0], self.population[0][1] )
 
-		avrg = 0.0
+		avrg_lines      = 0.0
+		avrg_tetriminos = 0.0
 		for i in range( self.POPULATION_SIZE ):
-			avrg += self.population[i][1]
-		avrg /= self.POPULATION_SIZE
+			lines = int(self.population[i][1] / ROW_MULTIPLER)
+			avrg_lines      += lines
+			avrg_tetriminos += self.population[i][1] - (lines*ROW_MULTIPLER)
 
+		avrg_lines /= self.POPULATION_SIZE
+		avrg_tetriminos /= self.POPULATION_SIZE
+
+		print(str(self.population[0][1]) + " Avg_Lines :" + str(avrg_lines) + " Avg_Tetriminos :" + str(avrg_tetriminos))
 
 		LoggerInstance.log( self.file_name_best, str(self.generation) + ", " + str(self.population[0][1]) + ", " + str(self.population[0][0]) )
-		LoggerInstance.log( self.file_name_avg, str(self.generation) + ", " + str(avrg) + ", " + str(Meansures.lap_meansure("GenerationProcessing")))
+		LoggerInstance.log( self.file_name_avg, str(self.generation) + ", " + str(avrg_lines) + ", " + str(avrg_tetriminos) + ", " + str(Meansures.lap_meansure("GenerationProcessing" + str(self.spawnerType))))
 		LoggerInstance.log( self.file_name_pop, str(self))
 		LoggerInstance.log( self.file_name_pop, "#################################" )
 
