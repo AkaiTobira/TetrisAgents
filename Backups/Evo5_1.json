@@ -1,7 +1,7 @@
 {
     "generation": 40,
     "date_time": "4-6-2021_172824",
-    "number_of_games": 35,
+    "number_of_games": 435,
     "population_size": 55,
     "number_of_tetrominos_per_game": 1000,
     "mutation_rate": 42,

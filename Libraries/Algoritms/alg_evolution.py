@@ -1,4 +1,5 @@
-from random import uniform, randint
+from os import name
+from random import Random, uniform, randint
 from math   import sqrt
 from Libraries.vector import Vector
 import time
@@ -14,7 +15,7 @@ class EvolutionAlgoritm:
 	POPULATION_SIZE        = 170
 	NEW_POPULATION_SIZE    = 35
 	MUTATION_RATE          = 42
-	NUMBER_OF_PLAYED_GAMES = 8
+	NUMBER_OF_PLAYED_GAMES = 1
 	EVOLUTION_VECTOR_DIMENSIONS = 4
 	curenntly_played_game  = 0
 	start                  = 0
@@ -24,21 +25,23 @@ class EvolutionAlgoritm:
 	timer                  = 0
 	contine_writing_logs   = False
 	spawnerType            = 0
+	TYPE = 0
 
 	file_name_best =""
 	file_name_avg  =""
 	file_name_pop  =""
 
-	def __init__(self, numberOfDimensions = 4, spawnerType = -1):
+	def __init__(self, numberOfDimensions = 4, spawnerType = -1, numberOfGames = 8):
 
 		self.population = []
 		self.unchecked_population = []
 		self.spawnerType = spawnerType
 
 		self.EVOLUTION_VECTOR_DIMENSIONS = numberOfDimensions
+		self.NUMBER_OF_PLAYED_GAMES      = numberOfGames
 		Meansures.register_meansure("GenerationProcessing" + str(spawnerType))
 
-		self.contine_writing_logs, self.population, self.unchecked_population, self.generation, self.dateTime = Backup.load_evolution(self.EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES, spawnerType)
+		self.contine_writing_logs, self.population, self.unchecked_population, self.generation, self.dateTime = Backup.load_evolution(self.EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES, spawnerType, self.TYPE)
 
 		if not self.contine_writing_logs:
 			self.dateTime = DATE_TIME
@@ -55,9 +58,9 @@ class EvolutionAlgoritm:
 			self.unchecked_population.append( [ i, self.population[i][0], 0 ] )
 
 	def register_logs(self):
-		self.file_name_best = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_" + str(self.spawnerType) + "_best_change"
-		self.file_name_avg  = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_" + str(self.spawnerType) + "_avrg_change"
-		self.file_name_pop   ="EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_" + str(self.spawnerType) + "_populations"
+		self.file_name_best = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(self.spawnerType)+ "_T" + str(self.TYPE) + "_best_change"
+		self.file_name_avg  = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(self.spawnerType)+ "_T" + str(self.TYPE) + "_avrg_change"
+		self.file_name_pop   ="EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(self.spawnerType)+ "_T" + str(self.TYPE) + "_populations"
 
 		LoggerInstance.register_log( self.file_name_best, self.dateTime, "evo", continueSyle=self.contine_writing_logs)
 		LoggerInstance.register_log( self.file_name_avg,  self.dateTime, "evo", continueSyle=self.contine_writing_logs)
@@ -125,6 +128,37 @@ class EvolutionAlgoritm:
 	
 		return [ f_best, s_best ]
 	
+	def select_for_rollette(self):
+		max_value = 0
+		for i in range(self.POPULATION_SIZE):
+			max_value += int(self.population[i][1]/ROW_MULTIPLER)
+
+		return [self.select_randomly(max_value), self.select_randomly(max_value)]
+
+	def select_randomly(self, max_value):
+		random_value = uniform(0, max_value)
+		current_sum = 0
+		for i in range(self.POPULATION_SIZE):
+			current_sum += int(self.population[i][1]/ROW_MULTIPLER)
+			if( random_value < current_sum ):
+				return [i, self.population[i][0], self.population[i][1]]
+
+	def select_randomly_ranked(self, population):
+		random_value = uniform(0.0, 0.99)
+		current_sum = 0
+		s = 1.45
+		pop_len = len(population)
+		for i in range(pop_len):
+			value = (2.0 - s)/float(pop_len) + float(2.0 * (pop_len-i-1) * (s-1.0))/float(pop_len *(pop_len-1))
+			current_sum += value
+			if(random_value < current_sum):
+				return [i, population[i][0], population[i][1]]
+
+	def select_for_ranking(self):
+		ranked_population = self.population[0: int(0.3* self.POPULATION_SIZE)]
+		return [self.select_randomly_ranked(ranked_population), self.select_randomly_ranked(ranked_population)]
+			
+
 	def crossover(self, parents):
 		score1 = parents[0][2]/ROW_MULTIPLER
 		score2 = parents[1][2]/ROW_MULTIPLER
@@ -168,6 +202,12 @@ class EvolutionAlgoritm:
 		new_table.reverse()
 		self.population = new_table
 			
+	def select_tepe(self):
+		if self.TYPE == 0: return self.select_for_tournament()
+		if self.TYPE == 1: return self.select_for_rollette()
+		if self.TYPE == 2: return self.select_for_ranking()
+
+
 	def fit(self, logInfoEnabled=True):
 		#self.moves.write(" FIT CALLED " + "\n")
 		new_generation = 0
@@ -177,7 +217,7 @@ class EvolutionAlgoritm:
 		self.unchecked_population = []
 
 		while new_generation < self.NEW_POPULATION_SIZE - int(0.05*self.POPULATION_SIZE):
-			t = self.select_for_tournament()
+			t = self.select_tepe()
 			temp = self.crossover(t)
 			self.unchecked_population.append([t[0][0], temp[0], temp[1]])
 			temp = self.crossover(t)
@@ -199,7 +239,10 @@ class EvolutionAlgoritm:
 
 
 	def logInfo(self):
-		BestUnitsBackupSaver.saveScore("Evolution" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_" + str(self.spawnerType), self.population[0][0], self.population[0][1] )
+		name2 = "Evolution" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(self.spawnerType) + "_D" + str(self.NUMBER_OF_PLAYED_GAMES)
+		if self.TYPE != 0: name2 += "_T" + str(self.TYPE)
+
+		BestUnitsBackupSaver.saveScore(name2, self.population[0][0], self.population[0][1] )
 
 		avrg_lines      = 0.0
 		avrg_tetriminos = 0.0

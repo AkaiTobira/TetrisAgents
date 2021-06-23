@@ -1,5 +1,5 @@
 
-from random import Random, random
+from random import Random, random, SystemRandom
 from Libraries.Algoritms.alg_nn import NeuralNetwork
 import pygame
 import time
@@ -19,10 +19,11 @@ from Libraries.Structures.playerList import PresenterBotsController
 from Libraries.Structures.meansures  import Meansures
 from Libraries.Structures.best_saver import BestUnitsBackupSaver
 
-MAX_NUMBER_OF_GAMES = 52
+MAX_NUMBER_OF_GAMES = 100
 
 class PlayedGamesChecker:
     index = 1
+    meansureName = 0
     
 
     def __init__(self) -> None: pass
@@ -31,9 +32,10 @@ class PlayedGamesChecker:
 
     def get_first_not_completed(self):
         keys = BestUnitsBackupSaver.json_converted.keys()
+        Meansures.register_meansure("Timer_GameLenght")
 
         for key in keys:
-            for generator in range(0,3):
+            for generator in range(2,3):
                 try :
                     with open('logs/scores/' + str(key) + "-" + str(generator), 'r') as infile:
                         num_lines = sum(1 for line in infile)
@@ -44,11 +46,12 @@ class PlayedGamesChecker:
                 except IOError:
                     self.create_template(key, generator)
                     return key, generator
-        return keys[ Random.randint(0,len(keys)-1)], Random.randint(0,3)
+
+        return list(keys)[int(random() * len(keys))], int(random() * 3)
 
     def create_template(self, key, generator):
         with open('logs/scores/' + str(key) + "-" + str(generator), 'w') as outfile:
-            outfile.write(str(key) + "-" + str(generator) + ",score,tetriminos\n")
+            outfile.write(str(key) + "-" + str(generator) + ",score,tetriminos,game time\n")
         outfile.close()
         self.index = 1
 
@@ -58,7 +61,7 @@ class PlayedGamesChecker:
         infile.close()
 
         with open('logs/scores/' + str(key) + "-" + str(generator), 'a') as outfile:
-            outfile.write(str(self.index) + "," + str(score)+"," + str(tetriminos) + "\n")
+            outfile.write(str(self.index) + "," + str(score)+"," + str(tetriminos) + "," + str(Meansures.lap_meansure("Timer_GameLenght")) + "\n")
         outfile.close()
         print( str(key) + "-" + str(generator) + ":" + str(self.index) + "," + str(score)+"," + str(tetriminos))
         return self.index > MAX_NUMBER_OF_GAMES
@@ -75,15 +78,16 @@ class ContinuesPlaymodeController:
     def __init__(self):
         self.spawner =  RandomSpawnTetromino()
         self.create_next_unit()
-        print(self.playerUnit, self.spawner)
+        #print(self.playerUnit, self.spawner)
 
     def _get_spawner(self):
-        if self.generatorType == 0: return RandomSpawnTetromino()
-        if self.generatorType == 1: return SimpleSpawnTetrimino()
+        if self.generatorType == 0: return SimpleSpawnTetrimino()
+        if self.generatorType == 1: return RandomSpawnTetromino()
         if self.generatorType == 2: return NewestRandomSpawnTetromino()
 
     def create_next_unit(self): 
         self.first_not_over, self.generatorType = self.checker.get_first_not_completed()
+        print(self.first_not_over, self.generatorType)
         self.playerUnit = self.create_player()
         self.spawner = self._get_spawner()
 

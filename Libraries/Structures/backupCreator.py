@@ -45,17 +45,29 @@ class BackupCreator:
         return True, model, memory, json_converted["discount"], json_converted["epsilon"], json_converted["date_time"]
 
 
-    def load_evolution(self, numberOfDimenstion, numberInPopulation, number_of_games, spawnerType):
+    def load_evolution(self, numberOfDimenstion, numberInPopulation, number_of_games, spawnerType, learningTyep):
         json_converted = None
 
+
         try:
-            with open('Backups/Evo' + str(numberOfDimenstion) + "_" + str(spawnerType) + '.json', 'r') as json_file:
+            with open('Backups/Evo' + str(numberOfDimenstion) + "_G" + str(spawnerType) + "_D" + str(number_of_games) + "_T" + str(learningTyep) + '.json', 'r') as json_file:
                 json_converted = json.loads(json_file.read())
         except IOError:
-            return False, [], [], 0, 0
+            if(learningTyep == 0):
+                try:
+                    with open('Backups/Evo' + str(numberOfDimenstion) + "_G" + str(spawnerType) + "_D" + str(number_of_games) + '.json', 'r') as json_file:
+                        json_converted = json.loads(json_file.read())
+                except IOError:
+                    return False, [], [], 0, 0
+            else: return False, [], [], 0, 0
 
-        if number_of_games != json_converted["number_of_games"] or MAX_NUMBER_PER_GAME_EVO != json_converted["number_of_tetrominos_per_game"] :
-            print(  'Backups/Evo' + str(numberOfDimenstion) + "_" + str(spawnerType) + ": Backup is different, couldn't read from file")
+        if "restart" in json_converted.keys():
+            if json_converted["restart"] == True: 
+                print(  'Backups/Evo' + str(numberOfDimenstion) + "_" + str(spawnerType) + "_" + str(numberOfDimenstion)  + ": Backup reset")
+                return False, [], [], 0, ""
+
+        if MAX_NUMBER_PER_GAME_EVO != json_converted["number_of_tetrominos_per_game"] :
+            print(  'Backups/Evo' + str(numberOfDimenstion) + "_" + str(spawnerType) + "_" + str(numberOfDimenstion)  + ": Backup is different, couldn't read from file")
             return False, [], [], 0, ""
 
         population = []
@@ -77,9 +89,11 @@ class BackupCreator:
         backup = {
             "generation"      : evolutionAlgoritm.generation,
             "date_time"       : evolutionAlgoritm.dateTime,
-            "number_of_games" : evolutionAlgoritm.NUMBER_OF_PLAYED_GAMES,
-            "population_size" : len(evolutionAlgoritm.population),
             "number_of_tetrominos_per_game" : MAX_NUMBER_PER_GAME_EVO,
+            "left_to_process" : len(evolutionAlgoritm.unchecked_population),
+            "number_of_games" : evolutionAlgoritm.NUMBER_OF_PLAYED_GAMES,
+            "reset"           : False,
+            "population_size" : len(evolutionAlgoritm.population),
             "mutation_rate"   : evolutionAlgoritm.MUTATION_RATE,
             "population"      : [],
             "to_check"        : []
@@ -100,7 +114,7 @@ class BackupCreator:
 
        # print( len(backup["population"]), len(backup["to_check"]) )
 
-        with open('Backups/Evo' + str(evolutionAlgoritm.EVOLUTION_VECTOR_DIMENSIONS) + "_" + str(evolutionAlgoritm.spawnerType)  + '.json', 'w') as outfile:
+        with open('Backups/Evo' + str(evolutionAlgoritm.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(evolutionAlgoritm.spawnerType) + "_D" + str(evolutionAlgoritm.NUMBER_OF_PLAYED_GAMES)  +  "_T" + str(evolutionAlgoritm.TYPE) + '.json', 'w') as outfile:
             json.dump(backup, outfile, indent=4)
 
     def load_pso(self, numberOfDimenstion, sizeOfPopulation, spawnerType):

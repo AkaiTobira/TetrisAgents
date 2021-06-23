@@ -139,14 +139,17 @@ class TetrisGrid:
             self.bumpiness += math.fabs( height_i - height_i_1 ) 
 
             if i == 0:
-                self.biggestWheel = self.heights[1] - self.heights[0]
+                value = self.heights[1] - self.heights[0] 
+                self.biggestWheel = max(value, 0)
                 self.sumWheel += self.biggestWheel
             else:
                 value =  (height_i_1 + self.heights[i-1] - (2.0 *height_i)) * 0.5
+                value = min(0, value)
                 self.biggestWheel = max( self.biggestWheel, value)
                 self.sumWheel += value
 
         value2 = self.heights[8] - self.heights[9]
+        value2 = min(0, value2)
         self.biggestWheel = max( self.biggestWheel,  value2 )
         self.sumWheel += value2
 

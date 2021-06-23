@@ -13,10 +13,10 @@ class EvolutionAi:
     hights = [0,0,0,0,0,0,0,0,0,0]
     holes  = [0,0,0,0,0,0,0,0,0,0]
 
-    def __init__(self, predefined_values = None, numberOfDimenstions = 4, spawnerType = -1):
+    def __init__(self, predefined_values = None, numberOfDimenstions = 4, spawnerType = -1, numberOfGames = 8):
         self.numberOfDimensions = numberOfDimenstions
         if( predefined_values == None):
-            self.evolution_alg  = EvolutionAlgoritm(numberOfDimenstions, spawnerType )
+            self.evolution_alg  = EvolutionAlgoritm(numberOfDimenstions, spawnerType, numberOfGames)
             self.current_values = self.evolution_alg.unchecked_population[0][1]
         else:
             self.isLocked = True
@@ -33,55 +33,69 @@ class EvolutionAi:
                 grid.lock(t, get_color(Colors.GOLD))
                 return self.evaulate(t, grid)
 
-    def evaulate(self, t, grid):
-        if self.numberOfDimensions == 4:
-            return ( t.position[1] * self.current_values[0] + 
+    def evaluate_4(self, t, grid):
+        return ( t.position[1] * self.current_values[0] + 
                     grid.sumHeight * self.current_values[1] + 
                     grid.sumHoles  * self.current_values[2] + 
                     grid.bumpiness * self.current_values[3] #+ grid.clearedRow
                     )
-        if  self.numberOfDimensions == 5:
-            return ( grid.vTransitions * self.current_values[0] + 
-                    grid.avgHeight * self.current_values[1] + 
-                    grid.sumHoles2  * self.current_values[2] + 
+    
+    def evaluate_5(self, t, grid):
+        return ( t.position[1] * self.current_values[0] + 
+                    grid.sumHeight * self.current_values[1] + 
+                    grid.sumHoles  * self.current_values[2] + 
                     grid.bumpiness * self.current_values[3] +
-               #     grid.diffColumn * self.current_values[4] +
-                    (GRID_HEIGHT - t.position[1])  * self.current_values[4]
+                    grid.clearedRow * self.current_values[4]
                     )
-        if  self.numberOfDimensions == 6:
-            return ( grid.vTransitions * self.current_values[0] + 
+
+    def evaluate_6(self, t, grid):
+        return ( grid.vTransitions * self.current_values[0] + 
                     grid.avgHeight * self.current_values[1] + 
                     grid.sumHoles2  * self.current_values[2] + 
                     grid.bumpiness * self.current_values[3] +
                     grid.bumpinessHeight * self.current_values[4] +
                     (GRID_HEIGHT - t.position[1])  * self.current_values[5]
                     )
-        if  self.numberOfDimensions == 7:
-            return ( grid.vTransitions * self.current_values[0] + 
-                    grid.hTransitions * self.current_values[1] + 
+
+    def evaluate_7(self, t, grid):
+        return ( grid.vTransitions * self.current_values[0] + 
+                    grid.avgHeight * self.current_values[1] + 
                     grid.sumHoles2  * self.current_values[2] + 
                     grid.bumpiness * self.current_values[3] +
-                    grid.diffColumn * self.current_values[4] +
-                    t.position[1]  * self.current_values[5] +
-                    grid.avgHeight * self.current_values[6]
+                    grid.bumpinessHeight * self.current_values[4] +
+                    (GRID_HEIGHT - t.position[1])  * self.current_values[5] +
+                    grid.clearedRow * self.current_values[6]
                     )
-        if  self.numberOfDimensions == 8:
-            return ( grid.vTransitions * self.current_values[0] + 
+
+    def evaluate_8(self, t, grid):
+        return ( grid.vTransitions * self.current_values[0] + 
                     grid.hTransitions * self.current_values[1] + 
-                    grid.sumHoles2  * self.current_values[2] + 
+                    grid.biggestWheel  * self.current_values[2] + 
                     grid.bumpiness * self.current_values[3] +
                     grid.diffColumn * self.current_values[4] +
                     t.position[1]  * self.current_values[5] +
                     grid.avgHeight * self.current_values[6] +
-                    grid.clearedRow * self.current_values[7]
+                    grid.bumpinessHeight * self.current_values[7]
                     )
-        if self.numberOfDimensions == 14:
-            return (
+    def evaluate_10(self, t, grid):
+        return ( grid.hTransitions * self.current_values[0] +
+                grid.vTransitions * self.current_values[1] +
+                t.position[1] * self.current_values[2] +
+                grid.maxColumn   * self.current_values[3] + 
+                grid.minColumn   * self.current_values[4] + 
+                grid.avgHeight    * self.current_values[5] +
+                grid.bumpiness    * self.current_values[6] +
+                grid.clearedRow   * self.current_values[7] +
+                grid.sumWheel     * self.current_values[8] +
+                grid.bumpinessHeight  * self.current_values[9]
+                )
+    def evaluate_14(self, t, grid):
+        return (
                     grid.hTransitions * self.current_values[0] +
                     grid.vTransitions * self.current_values[1] +
-                    (GRID_HEIGHT - t.position[1]) * self.current_values[2] +
+                    t.position[1] * self.current_values[2] +
                     grid.maxColumn   * self.current_values[3] + 
-                    grid.diffColumn   * self.current_values[4] + 
+                    grid.minColumn   * self.current_values[4] + 
                     grid.avgHeight    * self.current_values[5] +
                     grid.sumHeight    * self.current_values[6] + 
                     grid.sumHoles2    * self.current_values[7] +
@@ -92,18 +106,28 @@ class EvolutionAi:
                     grid.bumpinessHeight  * self.current_values[12] +
                     grid.fullSquares  * self.current_values[13]
                     )
-        if self.numberOfDimensions == 10:
-            return ( grid.maxColumn   * self.current_values[0] + 
-                    grid.sumHeight    * self.current_values[1] + 
-                    grid.sumHoles     * self.current_values[2] + 
-                    grid.bumpiness    * self.current_values[3] +
-                    grid.clearedRow   * self.current_values[4] +
-                    grid.biggestWheel * self.current_values[5] +
-                    grid.hTransitions * self.current_values[6] +
-                    t.position[1]     * self.current_values[7] +
-                    grid.avgHeight    * self.current_values[8] +
-                    grid.fullSquares  * self.current_values[9]
+
+
+    def evaulate(self, t, grid):
+        if  self.numberOfDimensions == 4: return self.evaluate_4(t,grid)
+        if  self.numberOfDimensions == 5: return self.evaluate_5(t,grid)
+        if  self.numberOfDimensions == 6: return self.evaluate_6(t,grid)
+        if  self.numberOfDimensions == 8: return self.evaluate_8(t,grid)
+        #if  self.numberOfDimensions == 7: return self.evaluate_7(t,grid)
+        if self.numberOfDimensions == 14: return self.evaluate_14(t,grid)
+        if self.numberOfDimensions == 10: return self.evaluate_10(t,grid)
+        
+        if  self.numberOfDimensions == 7:
+            return ( grid.vTransitions * self.current_values[0] + 
+                    grid.hTransitions * self.current_values[1] + 
+                    grid.sumHoles2  * self.current_values[2] + 
+                    grid.bumpiness * self.current_values[3] +
+                    grid.diffColumn * self.current_values[4] +
+                    t.position[1]  * self.current_values[5] +
+                    grid.avgHeight * self.current_values[6]
                     )
+        
+        
         print("No Valid type")
         return ( t.position[1] * self.current_values[0] + 
                     grid.sumHeight * self.current_values[1] + 

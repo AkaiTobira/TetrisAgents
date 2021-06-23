@@ -2,20 +2,22 @@
 
 
 import json
+from os import close
 from Libraries.consts  import ROW_MULTIPLER
 
 class BestUnitSaver:
     controll_file  = None
     json_converted = None 
 
-    def __init__(self):
-        #self.controll_file = open("logs/bestBackup.json", "r")
+    def __init__(self) -> None:
         with open('logs/bestBackup.json') as json_file:
             self.json_converted = json.loads(json_file.read())
-        #self.printFile()
-
+        json_file.close()
 
     def saveNeuralNetwork(self, name, score, model):
+        with open('logs/bestBackup.json') as json_file:
+            self.json_converted = json.loads(json_file.read())
+
         if (not name in self.json_converted) or score > self.json_converted[name]["score"]["combined"] :
             print("Found better in : " + name + " with score " + str(score))
             self.json_converted[name] = { 
@@ -28,6 +30,9 @@ class BestUnitSaver:
             self.saveDump()
 
     def saveScore(self, name, value, score):
+        with open('logs/bestBackup.json') as json_file:
+            self.json_converted = json.loads(json_file.read())
+
 
         if( (not name in self.json_converted) or score > self.json_converted[name]["score"]["combined"] ):
             print("Found better in : " + name + " with score " + str(score))
