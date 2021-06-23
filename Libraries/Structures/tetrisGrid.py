@@ -123,11 +123,11 @@ class TetrisGrid:
         self.sumWheel = 0
 
 
-        self.bumpinessHeight  = (self.heights[0] - self.minColumn) * 5 + (self.heights[1] - self.minColumn) * 4 
-        self.bumpinessHeight += (self.heights[2] - self.minColumn) * 3 + (self.heights[3] - self.minColumn) * 2 
-        self.bumpinessHeight += (self.heights[4] - self.minColumn) * 1 + (self.heights[5] - self.minColumn) * 1 
-        self.bumpinessHeight += (self.heights[6] - self.minColumn) * 2 + (self.heights[7] - self.minColumn) * 3 
-        self.bumpinessHeight += (self.heights[8] - self.minColumn) * 4 + (self.heights[9] - self.minColumn) * 5 
+        self.bumpinessHeight  = (self.heights[0] - self.minColumn) * 1 + (self.heights[1] - self.minColumn) * 2 
+        self.bumpinessHeight += (self.heights[2] - self.minColumn) * 3 + (self.heights[3] - self.minColumn) * 4 
+        self.bumpinessHeight += (self.heights[4] - self.minColumn) * 5 + (self.heights[5] - self.minColumn) * 5 
+        self.bumpinessHeight += (self.heights[6] - self.minColumn) * 4 + (self.heights[7] - self.minColumn) * 3 
+        self.bumpinessHeight += (self.heights[8] - self.minColumn) * 2 + (self.heights[9] - self.minColumn) * 1 
         self.bumpinessHeight /= GRID_WIDTH
         #self.bumpinessHeight = (self.sumHeight - GRID_WIDTH*self.minColumn)/GRID_WIDTH
 

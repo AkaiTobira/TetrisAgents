@@ -62,7 +62,7 @@ class PlymodeController:
         if keyId == pygame.K_6 : return EvolutionAi(None, 10, 3, 8)
         if keyId == pygame.K_7 : return EvolutionAi(None, 8, 3, 8)
         if keyId == pygame.K_8 : return EvolutionAi(None, 7, 3, 8)
-        if keyId == pygame.K_9 : return EvolutionAi(None, 5, 3, 8)
+        if keyId == pygame.K_9 : return EvolutionAi(None, 6, 3, 8)
         if keyId == pygame.K_6 : return PSOAi(None, 6, 2)
         if keyId == pygame.K_7 : return PSOAi(None, 6, 3)
         if keyId == pygame.K_8 : return ReinforcmentNetwork(None, 1)
@@ -233,21 +233,9 @@ class PresenterBotsController:
 
     def __init__( self ): 
         self.bots = [    
-        #    PresenterBotUnit(EvolutionAi(BestUnitsBackupSaver.getLastBest("Evolution6_3"), 6, 1), SimpleSpawnTetrimino()),
-        #    PresenterBotUnit(EvolutionAi(BestUnitsBackupSaver.getLastBest("Evolution6_3"), 6, 2), RandomSpawnTetromino()),
             PresenterBotUnit(EvolutionAi(BestUnitsBackupSaver.getLastBest("Evolution6_3"), 6, 3), NewestRandomSpawnTetriminoLocked()),
             PresenterBotUnit(EvolutionAi(BestUnitsBackupSaver.getLastBest("Evolution6_4"), 6, 4), NewestRandomSpawnTetriminoLocked()),
             PresenterBotUnit(EvolutionAi(BestUnitsBackupSaver.getLastBest("Evolution6_4"), 6, 4), NewestRandomSpawnTetriminoLocked()),
-        
-        #    PresenterBotUnit(ReinforcmentNetwork(BestUnitsBackupSaver.getLastBest("NeuralNetwork"))),
-        #    PresenterBotUnit(PSOAi( BestUnitsBackupSaver.getLastBest("PSO7_1") , 7),SimpleSpawnTetrimino()),
-        #    PresenterBotUnit(EvolutionAi( BestUnitsBackupSaver.getLastBest("Evolution10"), 10 ))
-        #    PresenterBotUnit(PSOAi( BestUnitsBackupSaver.getLastBest("PSO4") , 4)),
-        #    PresenterBotUnit(EvolutionAi( BestUnitsBackupSaver.getLastBest("Evolution4"), 4 )),
-        #    PresenterBotUnit(PSOAi( BestUnitsBackupSaver.getLastBest("PSO5") , 5)),
-        #    PresenterBotUnit(EvolutionAi( BestUnitsBackupSaver.getLastBest("Evolution5"), 5 )),
-        #    PresenterBotUnit(PSOAi( BestUnitsBackupSaver.getLastBest("PSO6") , 6)),
-        #    PresenterBotUnit(EvolutionAi( BestUnitsBackupSaver.getLastBest("Evolution6"), 6 ))
         ]
         self.bots = self.bots[ : NUMBER_OF_SCREENS ]
 
