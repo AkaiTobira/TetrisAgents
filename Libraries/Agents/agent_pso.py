@@ -13,10 +13,10 @@ class PSOAi:
 
     vector_dim = 10
 
-    def __init__(self, predefined_values = None, vectorDimensions = 10, spawnerId = 0, populationSize=50, numberOfIteration=100):
+    def __init__(self, predefined_values = None, vectorDimensions = 7, population_size = 10, c1 = 1, c2 = 1, w = 0.4):
         self.vector_dim = vectorDimensions
         if( predefined_values == None):
-            self.pso_alg        = PSO(vectorDimensions, int(vectorDimensions * vectorDimensions * 1.7), numberOfIteration, spawnerId)
+            self.pso_alg        = PSO(vectorDimensions, population_size, c1, c2, w)
             self.current_values = self.pso_alg.particles[0].pos_v
         else:
             print( "PSOAgent", vectorDimensions, " Loaded best for presenter app :" + str(predefined_values) )
@@ -56,14 +56,7 @@ class PSOAi:
                     (GRID_HEIGHT - t.position[1])  * self.current_values[5]
                     )
         if  self.vector_dim == 7:
-            return ( grid.vTransitions * self.current_values[0] + 
-                    grid.hTransitions * self.current_values[1] + 
-                    grid.sumHoles  * self.current_values[2] + 
-                    grid.bumpiness * self.current_values[3] +
-                    grid.clearedRow * self.current_values[4] +
-                    t.position[1]  * self.current_values[5] +
-                    grid.sumWheel * self.current_values[6]
-                    )
+            return  self.evaluate_7(t, grid)
         if self.vector_dim == 10:
             return ( grid.maxColumn   * self.current_values[0] + 
                     grid.sumHeight    * self.current_values[1] + 
@@ -75,6 +68,16 @@ class PSOAi:
                     t.position[1]     * self.current_values[7] +
                     grid.avgHeight    * self.current_values[8] +
                     grid.fullSquares  * self.current_values[9]
+                    )
+
+    def evaluate_7(self, t, grid):
+        return ( grid.vTransitions * self.current_values[0] + 
+                    grid.avgHeight * self.current_values[1] + 
+                    grid.sumHoles2  * self.current_values[2] + 
+                    grid.bumpiness * self.current_values[3] +
+                    grid.bumpinessHeight * self.current_values[4] +
+                    (GRID_HEIGHT - t.position[1])  * self.current_values[5] +
+                    grid.clearedRow * self.current_values[6]
                     )
 
     def next_move(self, t, grid, _unused):

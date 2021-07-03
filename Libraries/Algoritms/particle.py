@@ -19,9 +19,10 @@ class Particle:
         self.curr_score = curr_score
         self.best_score = -99999999 
 
-    def update_best(self, score):
-        self.best_pos   = self.pos_v
-        self.best_score = score
+    def update_best(self):
+        if(self.best_score < self.curr_score):
+            self.best_pos = self.pos_v
+            self.best_score = self.curr_score
 
     def move(self, team_best_pos, w, c1, c2):
         change = w * self.dir_v 
@@ -32,7 +33,7 @@ class Particle:
         self.pos_v = self.pos_v + change
 
     def __str__(self):
-        return  "P:" +  str( self.pos_v) + "BP:" + str(self.best_pos)+ "CD:" + str( self.dir_v ) + "BS:" + str( self.best_score ) + "\n"
+        return   "BS:" + str( self.best_score ) + "  CS:" + str( self.curr_score )
 
     def __repr__(self):
         return self.__str__()

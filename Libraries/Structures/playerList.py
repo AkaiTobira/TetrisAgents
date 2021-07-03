@@ -55,14 +55,14 @@ class PlymodeController:
 
     def _init_player(self, keyId):
         if keyId == pygame.K_1 : return HumanPlayer()
-        if keyId == pygame.K_2 : return EvolutionAi(None, 4, 3, 1)
-        if keyId == pygame.K_3 : return EvolutionAi(None, 4, 4, 1)
-        if keyId == pygame.K_4 : return EvolutionAi(None, 4, 3, 4)
-        if keyId == pygame.K_5 : return EvolutionAi(None, 14, 3, 8)
-        if keyId == pygame.K_6 : return EvolutionAi(None, 10, 3, 8)
-        if keyId == pygame.K_7 : return EvolutionAi(None, 8, 3, 8)
+        if keyId == pygame.K_2 : return PSOAi(None, 7, 20, 1.5, 1.5, 0.4)
+        if keyId == pygame.K_3 : return PSOAi(None, 7, 20, 1.5, 1.5, 0.5)
+        if keyId == pygame.K_4 : return PSOAi(None, 7, 20, 1.5, 1.5, 0.6)
+        if keyId == pygame.K_5 : return PSOAi(None, 7, 20, 1.5, 1.5, 0.7)
+        if keyId == pygame.K_6 : return PSOAi(None, 7, 20, 1.5, 1.5, 0.8)
+        if keyId == pygame.K_7 : return PSOAi(None, 7, 20, 1.5, 1.5, 0.9)
         if keyId == pygame.K_8 : return EvolutionAi(None, 7, 3, 8)
-        if keyId == pygame.K_9 : return EvolutionAi(None, 6, 3, 8)
+        if keyId == pygame.K_9 : return PSOAi(None, 6, 3)
         if keyId == pygame.K_6 : return PSOAi(None, 6, 2)
         if keyId == pygame.K_7 : return PSOAi(None, 6, 3)
         if keyId == pygame.K_8 : return ReinforcmentNetwork(None, 1)
@@ -71,21 +71,21 @@ class PlymodeController:
 
     def get_max_limit(self):
         if self.current_active_player_key == pygame.K_1 : return MAX_NUMBER_PER_GAME_HUM
-        if self.current_active_player_key == pygame.K_2 : return MAX_NUMBER_PER_GAME_EVO
-        if self.current_active_player_key == pygame.K_3 : return MAX_NUMBER_PER_GAME_EVO
-        if self.current_active_player_key == pygame.K_4 : return MAX_NUMBER_PER_GAME_EVO
-        if self.current_active_player_key == pygame.K_5 : return MAX_NUMBER_PER_GAME_EVO
-        if self.current_active_player_key == pygame.K_6 : return MAX_NUMBER_PER_GAME_EVO
-        if self.current_active_player_key == pygame.K_7 : return MAX_NUMBER_PER_GAME_EVO
+        if self.current_active_player_key == pygame.K_2 : return MAX_NUMBER_PER_GAME_PSO
+        if self.current_active_player_key == pygame.K_3 : return MAX_NUMBER_PER_GAME_PSO
+        if self.current_active_player_key == pygame.K_4 : return MAX_NUMBER_PER_GAME_PSO
+        if self.current_active_player_key == pygame.K_5 : return MAX_NUMBER_PER_GAME_PSO
+        if self.current_active_player_key == pygame.K_6 : return MAX_NUMBER_PER_GAME_PSO
+        if self.current_active_player_key == pygame.K_7 : return MAX_NUMBER_PER_GAME_PSO
         if self.current_active_player_key == pygame.K_8 : return MAX_NUMBER_PER_GAME_EVO
-        if self.current_active_player_key == pygame.K_9 : return MAX_NUMBER_PER_GAME_EVO
+        if self.current_active_player_key == pygame.K_9 : return MAX_NUMBER_PER_GAME_PSO
         if self.current_active_player_key == pygame.K_0 : return MAX_NUMBER_PER_GAME_NN
 
     def get_spawner(self):
         if self.current_active_player_key == pygame.K_1 : return NewestRandomSpawnTetromino()
         if self.current_active_player_key == pygame.K_2 : return NewestRandomSpawnTetromino()
         if self.current_active_player_key == pygame.K_3 : return NewestRandomSpawnTetromino()
-        if self.current_active_player_key == pygame.K_4 : return NewestRandomSpawnTetriminoLocked()
+        if self.current_active_player_key == pygame.K_4 : return NewestRandomSpawnTetromino()
         if self.current_active_player_key == pygame.K_5 : return NewestRandomSpawnTetromino()
         if self.current_active_player_key == pygame.K_6 : return NewestRandomSpawnTetromino()
         if self.current_active_player_key == pygame.K_7 : return NewestRandomSpawnTetromino()

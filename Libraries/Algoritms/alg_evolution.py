@@ -12,9 +12,9 @@ from Libraries.Structures.meansures import Meansures
 
 class EvolutionAlgoritm:
 	population             = []
-	POPULATION_SIZE        = 170
+	POPULATION_SIZE        = 50
 	NEW_POPULATION_SIZE    = 35
-	MUTATION_RATE          = 42
+	MUTATION_RATE          = 40
 	NUMBER_OF_PLAYED_GAMES = 1
 	EVOLUTION_VECTOR_DIMENSIONS = 4
 	curenntly_played_game  = 0
@@ -25,7 +25,7 @@ class EvolutionAlgoritm:
 	timer                  = 0
 	contine_writing_logs   = False
 	spawnerType            = 0
-	TYPE = 0
+	TYPE = 1
 
 	file_name_best =""
 	file_name_avg  =""
@@ -41,7 +41,7 @@ class EvolutionAlgoritm:
 		self.NUMBER_OF_PLAYED_GAMES      = numberOfGames
 		Meansures.register_meansure("GenerationProcessing" + str(spawnerType))
 
-		self.contine_writing_logs, self.population, self.unchecked_population, self.generation, self.dateTime = Backup.load_evolution(self.EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES, spawnerType, self.TYPE)
+		self.contine_writing_logs, self.population, self.unchecked_population, self.generation, self.dateTime = Backup.load_evolution(self.EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES, spawnerType, self.TYPE, self.MUTATION_RATE)
 
 		if not self.contine_writing_logs:
 			self.dateTime = DATE_TIME
@@ -58,9 +58,9 @@ class EvolutionAlgoritm:
 			self.unchecked_population.append( [ i, self.population[i][0], 0 ] )
 
 	def register_logs(self):
-		self.file_name_best = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(self.spawnerType)+ "_T" + str(self.TYPE) + "_best_change"
-		self.file_name_avg  = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(self.spawnerType)+ "_T" + str(self.TYPE) + "_avrg_change"
-		self.file_name_pop   ="EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(self.spawnerType)+ "_T" + str(self.TYPE) + "_populations"
+		self.file_name_best = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(self.spawnerType)+ "_T" + str(self.TYPE) + "_M" + str(self.MUTATION_RATE) + "_best_change"
+		self.file_name_avg  = "EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(self.spawnerType)+ "_T" + str(self.TYPE) + "_M" + str(self.MUTATION_RATE) + "_avrg_change"
+		self.file_name_pop   ="EVO" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(self.spawnerType)+ "_T" + str(self.TYPE) + "_M" + str(self.MUTATION_RATE) + "_populations"
 
 		LoggerInstance.register_log( self.file_name_best, self.dateTime, "evo", continueSyle=self.contine_writing_logs)
 		LoggerInstance.register_log( self.file_name_avg,  self.dateTime, "evo", continueSyle=self.contine_writing_logs)
@@ -239,8 +239,9 @@ class EvolutionAlgoritm:
 
 
 	def logInfo(self):
-		name2 = "Evolution" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(self.spawnerType) + "_D" + str(self.NUMBER_OF_PLAYED_GAMES)
+		name2 = "Evolution" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(self.spawnerType) + "_D" + str(self.NUMBER_OF_PLAYED_GAMES) + "_" + str(MAX_NUMBER_PER_GAME_EVO)
 		if self.TYPE != 0: name2 += "_T" + str(self.TYPE)
+		name2 += "_M" + str(self.MUTATION_RATE)
 
 		BestUnitsBackupSaver.saveScore(name2, self.population[0][0], self.population[0][1] )
 
