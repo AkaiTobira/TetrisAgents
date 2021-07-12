@@ -45,11 +45,11 @@ class BackupCreator:
         return True, model, memory, json_converted["discount"], json_converted["epsilon"], json_converted["date_time"]
 
 
-    def load_evolution(self, numberOfDimenstion, numberInPopulation, number_of_games, spawnerType, learningTyep, m_rate):
+    def load_evolution(self, numberOfDimenstion, numberInPopulation, number_of_games, spawnerType, learningTyep, m_rate, rep_type):
         json_converted = None
 
         try:
-            with open('Backups/Evo' + str(numberOfDimenstion) + "_G" + str(spawnerType) + "_D" + str(number_of_games) + "_T" + str(learningTyep) + "_MAX" + str(MAX_NUMBER_PER_GAME_EVO) + "_P" + str(numberInPopulation) + "_M" + str(m_rate) + '.json', 'r') as json_file:
+            with open('Backups/Evo' + str(numberOfDimenstion) + "_G" + str(spawnerType) + "_D" + str(number_of_games) + "_T" + str(learningTyep) + "_MAX" + str(MAX_NUMBER_PER_GAME_EVO) + "_P" + str(numberInPopulation) + "_M" + str(m_rate) + "_RP" + str(rep_type) + '.json', 'r') as json_file:
                 json_converted = json.loads(json_file.read())
 
             
@@ -115,7 +115,7 @@ class BackupCreator:
             })
 
        # print( len(backup["population"]), len(backup["to_check"]) )
-        with open('Backups/Evo' + str(evolutionAlgoritm.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(evolutionAlgoritm.spawnerType) + "_D" + str(evolutionAlgoritm.NUMBER_OF_PLAYED_GAMES)  +  "_T" + str(evolutionAlgoritm.TYPE) + "_MAX" + str(MAX_NUMBER_PER_GAME_EVO) + "_P" + str(evolutionAlgoritm.POPULATION_SIZE) + "_M" + str(evolutionAlgoritm.MUTATION_RATE)  + '.json', 'w') as outfile:
+        with open('Backups/Evo' + str(evolutionAlgoritm.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(evolutionAlgoritm.spawnerType) + "_D" + str(evolutionAlgoritm.NUMBER_OF_PLAYED_GAMES)  +  "_T" + str(evolutionAlgoritm.TYPE) + "_MAX" + str(MAX_NUMBER_PER_GAME_EVO) + "_P" + str(evolutionAlgoritm.POPULATION_SIZE) + "_M" + str(evolutionAlgoritm.MUTATION_RATE)  + "_RP" + str(evolutionAlgoritm.FIT_TYPE) + '.json', 'w') as outfile:
             json.dump(backup, outfile, indent=4)
 
     def load_pso(self, numberOfDimenstion, sizeOfPopulation, spawnerType, c1, c2, w):

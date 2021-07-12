@@ -1,5 +1,7 @@
+
+import math
 from os import name
-from random import Random, uniform, randint
+from random import Random, random, uniform, randint
 from math   import sqrt
 from Libraries.vector import Vector
 import time
@@ -15,7 +17,7 @@ class EvolutionAlgoritm:
 	POPULATION_SIZE        = 50
 	NEW_POPULATION_SIZE    = 35
 	MUTATION_RATE          = 40
-	NUMBER_OF_PLAYED_GAMES = 1
+	NUMBER_OF_PLAYED_GAMES = 2
 	EVOLUTION_VECTOR_DIMENSIONS = 4
 	curenntly_played_game  = 0
 	start                  = 0
@@ -25,11 +27,28 @@ class EvolutionAlgoritm:
 	timer                  = 0
 	contine_writing_logs   = False
 	spawnerType            = 0
-	TYPE = 1
+	TYPE = 0
+	FIT_TYPE = 1
 
 	file_name_best =""
 	file_name_avg  =""
 	file_name_pop  =""
+
+	def setup_fit_options(self):
+		if self.FIT_TYPE == 0: 
+			self.NEW_POPULATION_SIZE = int(0.7 * self.POPULATION_SIZE)
+			return
+		if self.FIT_TYPE == 1: 
+			self.NEW_POPULATION_SIZE = self.POPULATION_SIZE
+			return
+		if self.FIT_TYPE == 2: 
+			self.NEW_POPULATION_SIZE = int(0.5 * self.POPULATION_SIZE)
+			return
+		if self.FIT_TYPE == 3: 
+			self.NEW_POPULATION_SIZE = int(0.5 * self.POPULATION_SIZE)
+			return
+		
+
 
 	def __init__(self, numberOfDimensions = 4, spawnerType = -1, numberOfGames = 8):
 
@@ -39,9 +58,11 @@ class EvolutionAlgoritm:
 
 		self.EVOLUTION_VECTOR_DIMENSIONS = numberOfDimensions
 		self.NUMBER_OF_PLAYED_GAMES      = numberOfGames
+		self.setup_fit_options()
+
 		Meansures.register_meansure("GenerationProcessing" + str(spawnerType))
 
-		self.contine_writing_logs, self.population, self.unchecked_population, self.generation, self.dateTime = Backup.load_evolution(self.EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES, spawnerType, self.TYPE, self.MUTATION_RATE)
+		self.contine_writing_logs, self.population, self.unchecked_population, self.generation, self.dateTime = Backup.load_evolution(self.EVOLUTION_VECTOR_DIMENSIONS, self.POPULATION_SIZE, self.NUMBER_OF_PLAYED_GAMES, spawnerType, self.TYPE, self.MUTATION_RATE, self.FIT_TYPE)
 
 		if not self.contine_writing_logs:
 			self.dateTime = DATE_TIME
@@ -49,11 +70,19 @@ class EvolutionAlgoritm:
 		else:
 			if len(self.unchecked_population) == 0: self.fit(False)
 
+
 	def createPopulation(self):
 		for i in range(self.POPULATION_SIZE):
 			self.population.append([Vector( self.EVOLUTION_VECTOR_DIMENSIONS, unit=False ), 0])
-			#for k in range(len(self.population[i][0].v)):
-			#	self.population[i][0].v[k] = -abs(self.population[i][0].v[k])
+
+			self.population[i][0].v[0] = -abs(self.population[i][0].v[0])
+			self.population[i][0].v[1] =  abs(self.population[i][0].v[1])
+			self.population[i][0].v[2] = -abs(self.population[i][0].v[2])
+			self.population[i][0].v[3] = -abs(self.population[i][0].v[3])
+			self.population[i][0].v[4] =  abs(self.population[i][0].v[4])
+			self.population[i][0].v[5] =  abs(self.population[i][0].v[5])
+			self.population[i][0].v[6] = -abs(self.population[i][0].v[6])
+
 		for i in range( self.POPULATION_SIZE):
 			self.unchecked_population.append( [ i, self.population[i][0], 0 ] )
 
@@ -81,7 +110,14 @@ class EvolutionAlgoritm:
 		
 		#print( self.unchecked_population )
 
+		name2 = "Evolution" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(self.spawnerType) + "_D" + str(self.NUMBER_OF_PLAYED_GAMES) + "_" + str(MAX_NUMBER_PER_GAME_EVO)
+		if self.TYPE != 0: name2 += "_T" + str(self.TYPE)
+		name2 += "_M" + str(self.MUTATION_RATE)
+		name2 += "_PR" + str(self.FIT_TYPE)
+
 		self.replace_in_population()
+		BestUnitsBackupSaver.saveScore(name2, self.population[len(self.population)-1][0], self.population[len(self.population)-1][1] )
+
 		self.curenntly_played_game = 0
 		if len(self.unchecked_population) == 0: self.fit()
 
@@ -115,8 +151,8 @@ class EvolutionAlgoritm:
 
 	def select_for_tournament(self):
 		tournament = []
-		for i in range(int(self.POPULATION_SIZE*0.1)):
-			index = randint(0,self.POPULATION_SIZE-1)
+		for i in range(int(len(self.population)*0.1)):
+			index = randint(0,len(self.population)-1)
 			tournament.append( [index, self.population[index][0], self.population[index][1]] )
 
 		f_best = tournament[0]
@@ -130,7 +166,7 @@ class EvolutionAlgoritm:
 	
 	def select_for_rollette(self):
 		max_value = 0
-		for i in range(self.POPULATION_SIZE):
+		for i in range(len(self.population)):
 			max_value += int(self.population[i][1]/ROW_MULTIPLER)
 
 		return [self.select_randomly(max_value), self.select_randomly(max_value)]
@@ -138,7 +174,7 @@ class EvolutionAlgoritm:
 	def select_randomly(self, max_value):
 		random_value = uniform(0, max_value)
 		current_sum = 0
-		for i in range(self.POPULATION_SIZE):
+		for i in range(len(self.population)):
 			current_sum += int(self.population[i][1]/ROW_MULTIPLER)
 			if( random_value < current_sum ):
 				return [i, self.population[i][0], self.population[i][1]]
@@ -155,7 +191,7 @@ class EvolutionAlgoritm:
 				return [i, population[i][0], population[i][1]]
 
 	def select_for_ranking(self):
-		ranked_population = self.population[0: int(0.3* self.POPULATION_SIZE)]
+		ranked_population = self.population[0: int(0.3* len(self.population))]
 		return [self.select_randomly_ranked(ranked_population), self.select_randomly_ranked(ranked_population)]
 			
 
@@ -207,16 +243,12 @@ class EvolutionAlgoritm:
 		if self.TYPE == 1: return self.select_for_rollette()
 		if self.TYPE == 2: return self.select_for_ranking()
 
-
-	def fit(self, logInfoEnabled=True):
-		#self.moves.write(" FIT CALLED " + "\n")
-		new_generation = 0
-		self.sort()
-
+	def repopulate_70_elite(self): 
 		self.population = self.population[:self.POPULATION_SIZE]
 		self.unchecked_population = []
 
-		while new_generation < self.NEW_POPULATION_SIZE - int(0.05*self.POPULATION_SIZE):
+		new_generation = 0
+		while new_generation < self.NEW_POPULATION_SIZE - int(0.05*len(self.population)):
 			t = self.select_tepe()
 			temp = self.crossover(t)
 			self.unchecked_population.append([t[0][0], temp[0], temp[1]])
@@ -226,12 +258,97 @@ class EvolutionAlgoritm:
 #			new_generation.append(self.crossover(t))
 #		self.population =  self.population[0:(self.POPULATION_SIZE - int(0.3*self.POPULATION_SIZE))] + new_generation
 		
-		for i in range(int(0.1*self.POPULATION_SIZE)):
-			self.unchecked_population.append([ self.POPULATION_SIZE-i-1, Vector(self.EVOLUTION_VECTOR_DIMENSIONS, unit=True), 0 ] )
+		for i in range(int(0.1*len(self.population))):
+			self.unchecked_population.append([ len(self.population)-i-1, Vector(self.EVOLUTION_VECTOR_DIMENSIONS, unit=True), 0 ] )
 
 		self.unchecked_population = self.unchecked_population[:self.NEW_POPULATION_SIZE]
 
-		if logInfoEnabled:
+	def repopulate_all(self):
+		self.population = self.population[:len(self.population)]
+		self.unchecked_population = []
+
+		new_generation = 0
+		while new_generation < self.NEW_POPULATION_SIZE - int(0.05*len(self.population)):
+			t = self.select_tepe()
+			temp = self.crossover(t)
+			self.unchecked_population.append([t[0][0], temp[0], temp[1]])
+			new_generation += 1
+
+		for i in range(int(0.1*len(self.population))):
+			self.unchecked_population.append([ len(self.population)-i-1, Vector(self.EVOLUTION_VECTOR_DIMENSIONS, unit=True), 0 ] )
+
+		self.unchecked_population = self.unchecked_population[:self.NEW_POPULATION_SIZE]
+		self.population = []
+
+	def repopulate_random(self):
+		self.population = self.population[:len(self.population)]
+		self.unchecked_population = []
+
+		new_generation = 0
+		while new_generation < self.NEW_POPULATION_SIZE - int(0.05*len(self.population)):
+			t = self.select_tepe()
+			temp = self.crossover(t)
+			self.unchecked_population.append([t[0][0], temp[0], temp[1]])
+			new_generation += 1
+
+		for i in range(int(0.1*len(self.population))):
+			self.unchecked_population.append([ len(self.population)-i-1, Vector(self.EVOLUTION_VECTOR_DIMENSIONS, unit=True), 0 ] )
+
+		self.unchecked_population = self.unchecked_population[:self.NEW_POPULATION_SIZE]
+
+		while len(self.population) > self.NEW_POPULATION_SIZE:
+			index = randint(0,len(self.population)-1)
+			self.population = self.population[:index] + self.population[index+1:]
+
+	def repopulate_by_coomon(self):
+		self.population = self.population[:len(self.population)]
+		self.unchecked_population = []
+
+		new_generation = 0
+		while new_generation < self.NEW_POPULATION_SIZE - int(0.05*len(self.population)):
+			t = self.select_tepe()
+			temp = self.crossover(t)
+			self.unchecked_population.append([t[0][0], temp[0], temp[1]])
+			new_generation += 1
+
+		for i in range(int(0.1*len(self.population))):
+			self.unchecked_population.append([ len(self.population)-i-1, Vector(self.EVOLUTION_VECTOR_DIMENSIONS, unit=True), 0 ] )
+
+		self.unchecked_population = self.unchecked_population[:self.NEW_POPULATION_SIZE]
+
+		for i in range(len(self.unchecked_population)):
+			vectorLen = self.unchecked_population[i][1].len()
+			currLen = 999
+			closestIndex = -1
+			for j in range(10):
+				index = randint(0,len(self.population)-1)
+				if currLen > math.fabs(self.population[j][0].len() - vectorLen):
+					closestIndex = index
+					currLen = math.fabs(self.population[j][0].len() - vectorLen)
+			self.population = self.population[:closestIndex] + self.population[closestIndex+1:]
+
+
+	def repopulate(self):
+		if self.FIT_TYPE == 0: self.repopulate_70_elite()
+		if self.FIT_TYPE == 1: self.repopulate_all()
+		if self.FIT_TYPE == 2: self.repopulate_random()
+		if self.FIT_TYPE == 3: self.repopulate_by_coomon()
+
+	def fit(self, logInfoEnabled=True):
+		#self.moves.write(" FIT CALLED " + "\n")
+		
+		self.sort()
+		
+		if logInfoEnabled and self.FIT_TYPE == 1:
+			self.register_logs()
+			self.logInfo()
+			self.generation += 1
+			print( "Generation " + str(self.generation))
+
+
+		self.repopulate()
+
+		if logInfoEnabled and self.FIT_TYPE != 1:
 			self.register_logs()
 			self.logInfo()
 			self.generation += 1
@@ -242,18 +359,17 @@ class EvolutionAlgoritm:
 		name2 = "Evolution" + str(self.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(self.spawnerType) + "_D" + str(self.NUMBER_OF_PLAYED_GAMES) + "_" + str(MAX_NUMBER_PER_GAME_EVO)
 		if self.TYPE != 0: name2 += "_T" + str(self.TYPE)
 		name2 += "_M" + str(self.MUTATION_RATE)
-
-		BestUnitsBackupSaver.saveScore(name2, self.population[0][0], self.population[0][1] )
+		name2 += "_PR" + str(self.FIT_TYPE)
 
 		avrg_lines      = 0.0
 		avrg_tetriminos = 0.0
-		for i in range( self.POPULATION_SIZE ):
+		for i in range( len(self.population) ):
 			lines = int(self.population[i][1] / ROW_MULTIPLER)
 			avrg_lines      += lines
 			avrg_tetriminos += self.population[i][1] - (lines*ROW_MULTIPLER)
 
-		avrg_lines /= self.POPULATION_SIZE
-		avrg_tetriminos /= self.POPULATION_SIZE
+		avrg_lines /= len(self.population)
+		avrg_tetriminos /= len(self.population)
 
 		print(str(self.population[0][1]) + " Avg_Lines :" + str(avrg_lines) + " Avg_Tetriminos :" + str(avrg_tetriminos))
 
@@ -265,8 +381,8 @@ class EvolutionAlgoritm:
 
 
 	def get_fittest(self):
-		f_best = self.population[self.POPULATION_SIZE-1]
-		s_best = self.population[self.POPULATION_SIZE-1]
+		f_best = self.population[len(self.population)-1]
+		s_best = self.population[len(self.population)-1]
 		
 		for part in self.population:
 			if part[1] >= f_best[1]:

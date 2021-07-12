@@ -55,8 +55,8 @@ class PlymodeController:
 
     def _init_player(self, keyId):
         if keyId == pygame.K_1 : return HumanPlayer()
-        if keyId == pygame.K_2 : return PSOAi(None, 7, 20, 1.5, 1.5, 0.4)
-        if keyId == pygame.K_3 : return PSOAi(None, 7, 20, 1.5, 1.5, 0.5)
+        if keyId == pygame.K_2 : return PSOAi(None, 7, 20, 0.5, 1.0, 0.4)
+        if keyId == pygame.K_3 : return PSOAi(None, 7, 20, 0.5, 0.5, 0.5)
         if keyId == pygame.K_4 : return PSOAi(None, 7, 20, 1.5, 1.5, 0.6)
         if keyId == pygame.K_5 : return PSOAi(None, 7, 20, 1.5, 1.5, 0.7)
         if keyId == pygame.K_6 : return PSOAi(None, 7, 20, 1.5, 1.5, 0.8)

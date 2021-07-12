@@ -40,5 +40,6 @@ for f in files:
         for i in range(len(avg)):
             avg[i] /= count
         output.write( f + " : [AVG] : " + str(avg) + "\n")
+        output.write("\n")
 
 

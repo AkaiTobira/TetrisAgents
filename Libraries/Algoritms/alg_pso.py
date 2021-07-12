@@ -14,7 +14,7 @@ class PSO:
     best_score = -999999
     best_pos   = None
 
-    NUMBER_OF_PLAYED_GAMES = 5
+    NUMBER_OF_PLAYED_GAMES = 8
     POPULATION_SIZE = 0
     index           = 0
     iteraiton       = 0
