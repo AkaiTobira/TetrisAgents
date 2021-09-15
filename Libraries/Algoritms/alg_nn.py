@@ -1,3 +1,6 @@
+from pickle import TRUE
+from Libraries.Structures.logger import LoggerInstance
+from Libraries.Structures.settings import PARAMS
 from random import uniform, randint
 from math   import sqrt
 from copy   import deepcopy
@@ -14,50 +17,60 @@ import numpy as np
 import random
 
 class NeuralNetwork:
+    IS_LEARNABLE = True
     LEARNING_DELAY = 5
-    BUFFOR_SIZE    = 1028
     delay = 0
-    spawnerType = 0
     dateTime = ""
 
-    def __init__(self, state_size, replay_start_size=None, spawnerType = 0):
-        self.n_neurons      = [32, 32, 32]
-        self.activations    = ['relu', 'relu', 'relu', 'linear']
-        self.loss           = 'mse'
-        self.optimizer      = 'adam'
+    NAME = ""
+
+    def constuct_name(self):
+        self.NAME = "NeuralNetwork"
+        self.NAME += str(len(PARAMS.HEURYSTIC)) + "_"
+        self.NAME += str(PARAMS.MAX_POINTS) + "_"
+        
+        for i in PARAMS.NET_CONFIGURATION:
+            self.NAME += str(i) + "_"
+        for i in PARAMS.NET_OPTIMIZERS:
+            self.NAME += i[0] + "+"
+        self.NAME += PARAMS.OPTIMIZER + "_"
+        self.NAME += PARAMS.LOSS +"_"
+        self.NAME += str(PARAMS.BACH_SIZE) + "_"
+        self.NAME += str(PARAMS.EPOCH) 
+
+
+    def __init__(self, replay_start_size=None):
+        self.constuct_name()
+
+        self.n_neurons      = PARAMS.NET_CONFIGURATION
+        self.activations    = PARAMS.NET_OPTIMIZERS
+        self.loss           = PARAMS.LOSS
+        self.optimizer      = PARAMS.OPTIMIZER
 
         assert len(self.activations) == len(self.n_neurons) + 1
 
-        self.state_size     = state_size
-        self.spawnerType = spawnerType
-        can_continue, model, memory, discount, epsilon, dateTime = Backup.load_neural_network(state_size, spawnerType)
-
-        if can_continue:
-            self.model    = model
-            self.memory   = deque(memory, maxlen=self.BUFFOR_SIZE)
-            self.discount = discount
-            self.epsilon  = epsilon
-            self.dateTime = dateTime
-
-        #    print(self.memory[0])
-        else:
-            self.memory    = deque(maxlen=self.BUFFOR_SIZE)
+        if Backup.load_neural_network(self) == False:
+            self.memory    = deque(maxlen=PARAMS.MAX_POINTS)
             self.model     = self._build_model()
             self.discount  = 0.95
             self.epsilon   = 1
             self.dateTime = DATE_TIME
 
-        self.epsilon_min    = 0
-        self.epsilon_decay  = 0.002
+        self.file_save_name  = self.NAME + "_netChange"
+        LoggerInstance.register_log( self.file_save_name, self.dateTime, "nn", continueSyle=(DATE_TIME!=self.dateTime))
+        
 
-        if not replay_start_size: replay_start_size = self.BUFFOR_SIZE/2
+        self.epsilon_min    = 0
+        self.epsilon_decay  = 0.02
+
+        if not replay_start_size: replay_start_size = PARAMS.MAX_POINTS/2
         self.replay_start_size = replay_start_size
 
 
     def _build_model(self):
         model = Sequential()
         model.add(Dense(self.n_neurons[0], 
-                        input_dim=self.state_size, 
+                        input_dim=len(PARAMS.HEURYSTIC), 
                         activation=self.activations[0]))
 
         for i in range(1, len(self.n_neurons)):
@@ -68,23 +81,13 @@ class NeuralNetwork:
         return model
 
     def add_to_memory(self, current_state, next_state, reward, done):
-        if len(current_state) != self.state_size: return
+        if len(current_state) != len(PARAMS.HEURYSTIC): return
 
-        if done == False:
-            can_add = True
-            if reward >= ROW_MULTIPLER : pass
-            elif current_state[2] > next_state[2] : pass
-            else : can_add = False
-
-            if not can_add: return
-
-        if len(self.memory) == self.BUFFOR_SIZE:
-            removable = self.memory[0]
-            if self.epsilon > 0: self.memory.append(removable)
-
-        self.memory.append((current_state, next_state, reward if not done else -1000, done))
-      #  
-       # print((current_state, next_state, reward, done))
+   #     if len(self.memory) == self.BUFFOR_SIZE:
+  #          removable = self.memory[0]
+ #           if self.epsilon > 0: self.memory.append(removable)
+#
+        self.memory.append((current_state, next_state, reward, done))
 
     def random_value(self):
         return random.random()
@@ -109,7 +112,7 @@ class NeuralNetwork:
         else:
             for state_key in states.keys():
                 state = states[state_key]
-                value = self.predict_value(np.reshape(state, [1, self.state_size]))
+                value = self.predict_value(np.reshape(state, [1, len(PARAMS.HEURYSTIC)]))
                 if not max_value or value > max_value:
                     max_value  = value
                     best_state = state
@@ -118,17 +121,17 @@ class NeuralNetwork:
         return best_key
 
 
-    def train(self, batch_size=256, epochs=30):
+    def train(self):
         n = len(self.memory)
     
       #  print( n, self.delay )
 
-        if n >= self.replay_start_size and n >= batch_size:
+        if n >= self.replay_start_size and n >= PARAMS.BACH_SIZE:
             self.delay += 1
             if self.delay < self.LEARNING_DELAY: return
             self.delay = 0
         #    print(len(self.memory))
-            batch = random.sample(self.memory, batch_size)
+            batch = random.sample(self.memory, PARAMS.BACH_SIZE)
 
             # Get the expected score for the next states, in batch (better performance)
             next_states = np.array([x[1] for x in batch])
@@ -157,8 +160,9 @@ class NeuralNetwork:
           #  print( "Y" + str(y) )
 #
             # Fit the model to the given values
-            self.model.fit(np.array(x), np.array(y), batch_size=batch_size, epochs=epochs, verbose=0)
-
+            hisory = self.model.fit(np.array(x), np.array(y), batch_size=PARAMS.BACH_SIZE, epochs=PARAMS.EPOCH, verbose=0)
+            
+            print(self.get_last_for(str(hisory.epoch)), self.get_last_for(str(hisory.history)))
           #  print( "FIT CALLED")
 
             Backup.save_neural_network(self)
@@ -166,17 +170,24 @@ class NeuralNetwork:
             # Update the exploration variable
             if self.epsilon > self.epsilon_min:
                 self.epsilon -= self.epsilon_decay
-                self.BUFFOR_SIZE = 1028 + int( (1.0 - self.epsilon)/self.epsilon_decay ) * 5
-                self.memory = deque(maxlen=self.BUFFOR_SIZE, iterable=self.memory)
+               # self.BUFFOR_SIZE = 1028 + int( (1.0 - self.epsilon)/self.epsilon_decay ) * 5
+                self.memory = deque(maxlen=PARAMS.MAX_POINTS, iterable=self.memory)
                # self.
 
+    def get_last_for(self, strings):
+        strings.replace("[", "")
+        strings.replace("]", "")
+        obg = strings.split(",")
+        return obg[len(obg)-1]
+
 class NeuralNetworkFixed: 
+    IS_LEARNABLE = False
     model = None
     state_size = 0
 
-    def __init__(self, modelName, state_size):
+    def __init__(self, modelName):
         self.model = load_model(modelName)
-        self.state_size = state_size
+        self.state_size = len(PARAMS.HEURYSTIC)
         print("NeuralNetwork Loaded best for presenter app")
 
     def best_state(self, states):
@@ -186,7 +197,7 @@ class NeuralNetworkFixed:
 
         for state_key in states.keys():
             state = states[state_key]
-            value = self.predict_value(np.reshape(state, [1, self.state_size]))
+            value = self.predict_value(np.reshape(state, [1, 231]))
             if not max_value or value > max_value:
                 max_value  = value
                 best_state = state

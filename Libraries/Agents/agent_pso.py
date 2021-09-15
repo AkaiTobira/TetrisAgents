@@ -3,6 +3,7 @@ import math
 
 from Libraries.Algoritms.alg_pso    import PSO
 from Libraries.consts import *
+from Libraries.Structures.settings import *
 
 class PSOAi:
     pso_alg  = None
@@ -11,17 +12,13 @@ class PSOAi:
     hights = [0,0,0,0,0,0,0,0,0,0]
     holes  = [0,0,0,0,0,0,0,0,0,0]
 
-    vector_dim = 10
-
-    def __init__(self, predefined_values = None, vectorDimensions = 7, population_size = 10, c1 = 1, c2 = 1, w = 0.4):
-        self.vector_dim = vectorDimensions
+    def __init__(self, predefined_values = None):
         if( predefined_values == None):
-            self.pso_alg        = PSO(vectorDimensions, population_size, c1, c2, w)
+            self.pso_alg        = PSO()
             self.current_values = self.pso_alg.particles[0].pos_v
         else:
-            print( "PSOAgent", vectorDimensions, " Loaded best for presenter app :" + str(predefined_values) )
+            print( "PSOAgent", len(predefined_values), " Loaded best for presenter app :" + str(predefined_values) )
             self.current_values = predefined_values
-            self.vector_dim = len(predefined_values)
 
     def try_fit(self, x_pos, t, grid):
         t.position[0] = x_pos
@@ -34,51 +31,29 @@ class PSOAi:
                 return self.evaulate(grid, t)
 
     def evaulate(self, grid, t):
-        if self.vector_dim == 4:
-            return ( grid.biggestWheel * self.current_values[0] + 
-                    grid.sumHeight * self.current_values[1] + 
-                    grid.sumHoles  * self.current_values[2] + 
-                    grid.bumpiness * self.current_values[3] #+ grid.clearedRow
-                    )
-        if  self.vector_dim == 5:
-            return ( grid.maxColumn * self.current_values[0] + 
-                    grid.sumHeight * self.current_values[1] + 
-                    grid.sumHoles  * self.current_values[2] + 
-                    grid.bumpiness * self.current_values[3] +
-                    grid.biggestWheel * self.current_values[4]
-                    )
-        if  self.vector_dim == 6:
-            return ( grid.vTransitions * self.current_values[0] + 
-                    grid.avgHeight * self.current_values[1] + 
-                    grid.sumHoles2  * self.current_values[2] + 
-                    grid.bumpiness * self.current_values[3] +
-                    grid.bumpinessHeight * self.current_values[4] +
-                    (GRID_HEIGHT - t.position[1])  * self.current_values[5]
-                    )
-        if  self.vector_dim == 7:
-            return  self.evaluate_7(t, grid)
-        if self.vector_dim == 10:
-            return ( grid.maxColumn   * self.current_values[0] + 
-                    grid.sumHeight    * self.current_values[1] + 
-                    grid.sumHoles     * self.current_values[2] + 
-                    grid.bumpiness    * self.current_values[3] +
-                    grid.clearedRow   * self.current_values[4] +
-                    grid.biggestWheel * self.current_values[5] +
-                    grid.hTransitions * self.current_values[6] +
-                    t.position[1]     * self.current_values[7] +
-                    grid.avgHeight    * self.current_values[8] +
-                    grid.fullSquares  * self.current_values[9]
-                    )
+        heuristicList = []
+        if CLEARED_ROW_INDEX      in PARAMS.HEURYSTIC: heuristicList.append(grid.clearedRow)
+        if MIN_COLUMN_INDEX       in PARAMS.HEURYSTIC: heuristicList.append(grid.minColumn)
+        if MAX_COLUMN_INDEX       in PARAMS.HEURYSTIC: heuristicList.append(grid.maxColumn)
+        if DIFF_COLUMN_INDEX      in PARAMS.HEURYSTIC: heuristicList.append(grid.diffColumn)
+        if SUM_HEIGHT_INDEX       in PARAMS.HEURYSTIC: heuristicList.append(grid.sumHeight)
+        if AVG_HEIGHT_INDEX       in PARAMS.HEURYSTIC: heuristicList.append(grid.avgHeight)
+        if SUM_HOLES_INDEX        in PARAMS.HEURYSTIC: heuristicList.append(grid.sumHoles2)
+        if SUM_HOLES2_INDEX       in PARAMS.HEURYSTIC: heuristicList.append(grid.sumHoles)
+        if BUMPINESS_INDEX        in PARAMS.HEURYSTIC: heuristicList.append(grid.bumpiness)
+        if BUMPINESS_HEIGHT_INDEX in PARAMS.HEURYSTIC: heuristicList.append(grid.bumpinessHeight)
+        if H_TRANSITIONS_INDEX    in PARAMS.HEURYSTIC: heuristicList.append(grid.hTransitions)
+        if V_TRANSITIONS_INDEX    in PARAMS.HEURYSTIC: heuristicList.append(grid.vTransitions)
+        if BIG_WHEEL_INDEX        in PARAMS.HEURYSTIC: heuristicList.append(grid.biggestWheel)
+        if SUM_WHEELS_INDEX       in PARAMS.HEURYSTIC: heuristicList.append(grid.sumWheel)
+        if FULL_SQUARES_INDEX     in PARAMS.HEURYSTIC: heuristicList.append(grid.fullSquares)
+        if TETRIMINO_POSITION     in PARAMS.HEURYSTIC: heuristicList.append(t.position[1])
 
-    def evaluate_7(self, t, grid):
-        return ( grid.vTransitions * self.current_values[0] + 
-                    grid.avgHeight * self.current_values[1] + 
-                    grid.sumHoles2  * self.current_values[2] + 
-                    grid.bumpiness * self.current_values[3] +
-                    grid.bumpinessHeight * self.current_values[4] +
-                    (GRID_HEIGHT - t.position[1])  * self.current_values[5] +
-                    grid.clearedRow * self.current_values[6]
-                    )
+        score = 0.0
+        for i in range(len(self.current_values)):
+            score += heuristicList[i] * self.current_values[i]
+
+        return score
 
     def next_move(self, t, grid, _unused):
         grid = grid.get_grid()

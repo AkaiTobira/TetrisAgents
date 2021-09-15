@@ -190,7 +190,7 @@ class NewestRandomSpawnTetriminoLocked:
         for i in range(8):
             with open('Backups/Generator/Game_' + str(i) +  '.json', 'w') as outfile:
                 game = []
-                for i in range(10000):
+                for i in range(20004):
                     self.spawner.get_next()
                     game.append(self.spawner.n_tetromino.m_id)
                 json.dump(game, outfile, indent=4)

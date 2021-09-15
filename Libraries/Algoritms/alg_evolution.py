@@ -28,7 +28,7 @@ class EvolutionAlgoritm:
 	contine_writing_logs   = False
 	spawnerType            = 0
 	TYPE = 0
-	FIT_TYPE = 1
+	FIT_TYPE = 3
 
 	file_name_best =""
 	file_name_avg  =""

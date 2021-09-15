@@ -1,4 +1,5 @@
 
+from Libraries.Agents.agent_newLearning import ReinforcmentNetwork2
 from random import Random, random, SystemRandom
 from Libraries.Algoritms.alg_nn import NeuralNetwork
 import pygame
@@ -47,7 +48,8 @@ class PlayedGamesChecker:
                     self.create_template(key, generator)
                     return key, generator
 
-        return list(keys)[int(random() * len(keys))], int(random() * 3)
+        print("Testing Ended")
+        return None
 
     def create_template(self, key, generator):
         with open('logs/scores/' + str(key) + "-" + str(generator), 'w') as outfile:
@@ -93,9 +95,10 @@ class ContinuesPlaymodeController:
 
     def create_player(self):
         alg = None
-        if "Evo" in self.first_not_over: alg = EvolutionAi(BestUnitsBackupSaver.getLastBest(self.first_not_over))
+        if "EVO" in self.first_not_over: alg = EvolutionAi(BestUnitsBackupSaver.getLastBest(self.first_not_over))
         if "PSO" in self.first_not_over: alg = PSOAi(BestUnitsBackupSaver.getLastBest(self.first_not_over))
-        if "Neu" in self.first_not_over: alg = ReinforcmentNetwork(BestUnitsBackupSaver.getLastBest(self.first_not_over))
+        if "2Neu" in self.first_not_over: alg = ReinforcmentNetwork2(BestUnitsBackupSaver.getLastBest(self.first_not_over))
+        #if "Neu" in self.first_not_over: alg = ReinforcmentNetwork(BestUnitsBackupSaver.getLastBest(self.first_not_over))
         return alg
 
     def get_max_limit(self): return 9999999999

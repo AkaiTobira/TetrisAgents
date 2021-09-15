@@ -16,6 +16,9 @@ class Vector:
     def __repr__(self):
         return self.__str__()
 
+    def __len__(self):
+        return len(self.v)
+
     def len(self):
         s = 0.0
         for val in self.v: s += val**2
@@ -67,7 +70,11 @@ class Vector:
         return self.__mul__(nmb)
 
     def mutate(self, rate, value=uniform(-0.2,0.2)):
-        if uniform(0,1) > rate: return
+        if uniform(0,1) > rate: return False
+        self.v[ randint(0, len(self.v)-1) ] += value
+        return True
+
+    def mutate(self, value=uniform(-0.2,0.2)):
         self.v[ randint(0, len(self.v)-1) ] += value
 
     def __getitem__(self, i):    return self.v[i]

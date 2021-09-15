@@ -2,7 +2,9 @@
 from Libraries.consts import *
 from Libraries.vector import Vector
 from Libraries.Algoritms.particle import Particle
+from Libraries.Structures.settings import PARAMS
 from keras.models     import Sequential, save_model, load_model
+from collections import deque
 
 import json
 
@@ -11,189 +13,185 @@ class BackupCreator:
 
     def __init__(self): pass
 
-    def save_neural_network(self, neuralNetwork):
+    def save_neural_network(self, instance):
         backup = {
-            "input_size" : neuralNetwork.state_size,
-            "date_time"  : neuralNetwork.dateTime,
-            "model_path" : "logs/nn/" + neuralNetwork.dateTime,
-            "number_of_tetrominos_per_game" : MAX_NUMBER_PER_GAME_NN,
-            "epsilon"    : neuralNetwork.epsilon,
-            "discount"   : neuralNetwork.discount,
-            "memory"     : list(neuralNetwork.memory)
+            "date_time"  : instance.dateTime,
+            "model_path" : "Backups/Networks/" + instance.NAME,
+            "epsilon"    : instance.epsilon,
+            "discount"   : instance.discount,
+            "memory"     : list(instance.memory)
         }
 
-        neuralNetwork.model.save(backup["model_path"])
+        instance.model.save(backup["model_path"])
 
-        with open('Backups/NN'+ str(neuralNetwork.spawnerType) +'.json', 'w') as outfile:
+        with open('Backups/' +instance.NAME +'.json', 'w') as outfile:
             json.dump(backup, outfile, indent=4)
 
-    def load_neural_network(self, inputSize, spawnerType):
+    def load_neural_network(self, instance):
         json_converted = None
 
         try:
-            with open('Backups/NN_' + str(spawnerType) +  '.json', "r") as json_file:
+            with open('Backups/' + str(instance.NAME) +  '.json', "r") as json_file:
                 json_converted = json.loads(json_file.read())
         except IOError:
-            return False, [], [], 0, 0
+            return False
 
-        if inputSize != json_converted["input_size"] or MAX_NUMBER_PER_GAME_NN != json_converted["number_of_tetrominos_per_game"]:
-            print( "Backups/NN_"  + str(spawnerType) + " : Backup is different, couldn't read from file")
-            return False, None, [], 0, 0, ""
+        instance.model    = load_model( json_converted["model_path"])
+        instance.memory   = deque(json_converted["memory"], maxlen=PARAMS.MAX_POINTS)
+        instance.discount = json_converted["discount"]
+        instance.epsilon  = json_converted["epsilon"]
+        instance.dateTime = json_converted["date_time"]
+        return True
 
-        model  = load_model( json_converted["model_path"])
-        memory = json_converted["memory"]
-        return True, model, memory, json_converted["discount"], json_converted["epsilon"], json_converted["date_time"]
-
-
-    def load_evolution(self, numberOfDimenstion, numberInPopulation, number_of_games, spawnerType, learningTyep, m_rate, rep_type):
+    def load_evolution(self, instance):
         json_converted = None
 
         try:
-            with open('Backups/Evo' + str(numberOfDimenstion) + "_G" + str(spawnerType) + "_D" + str(number_of_games) + "_T" + str(learningTyep) + "_MAX" + str(MAX_NUMBER_PER_GAME_EVO) + "_P" + str(numberInPopulation) + "_M" + str(m_rate) + "_RP" + str(rep_type) + '.json', 'r') as json_file:
+            with open('Backups/' + instance.NAME + '.json', 'r') as json_file:
                 json_converted = json.loads(json_file.read())
-
-            
         except IOError:
-            #if(learningTyep == 1):
-            #    try:
-            #        with open('Backups/Evo' + str(numberOfDimenstion) + "_G" + str(spawnerType) + "_D" + str(number_of_games) + '_T1.json', 'r') as json_file:
-            #            json_converted = json.loads(json_file.read())
-            #    except IOError:
-            #        return False, [], [], 0, 0
-            #else: 
-            return False, [], [], 0, 0
+            print("No valid backup for :" + instance.NAME)
+            return False
 
-        if "restart" in json_converted.keys():
-            if json_converted["restart"] == True: 
-                print(  'Backups/Evo' + str(numberOfDimenstion) + "_" + str(spawnerType) + "_" + str(numberOfDimenstion)  + ": Backup reset")
-                return False, [], [], 0, ""
+        if json_converted["reset"]: 
+            print("Reseting backup")
+            return False
 
-        if MAX_NUMBER_PER_GAME_EVO != json_converted["number_of_tetrominos_per_game"] :
-            print(  'Backups/Evo' + str(numberOfDimenstion) + "_" + str(spawnerType) + "_" + str(numberOfDimenstion)  + ": Backup is different, couldn't read from file")
-            return False, [], [], 0, ""
-
-        population = []
+        dimensions = PARAMS.HEURYSTIC_AMOUNT
+        instance.population      = []
         for i in range( len( json_converted["population"]) ):
-            vec = Vector(numberOfDimenstion)
+            vec = Vector(dimensions)
             vec.v =  json_converted["population"][i]["values"]
-            population.append( [ vec, json_converted["population"][i]["score"]] )
+            instance.population.append( [ vec, json_converted["population"][i]["score"]] )
 
-        to_check = []
+        instance.parents         = []
+        for i in range( len( json_converted["parents"]) ):
+            vec = Vector(dimensions)
+            vec.v =  json_converted["parents"][i]["values"]
+            instance.parents.append( [ vec, json_converted["parents"][i]["score"]] )
+
+        instance.prev_population = []
+        for i in range( len( json_converted["p_population"]) ):
+            vec = Vector(dimensions)
+            vec.v =  json_converted["p_population"][i]["values"]
+            instance.prev_population.append( [ vec, json_converted["p_population"][i]["score"]] )
+
+        instance.unchecked_population = []
         for i in range( len( json_converted["to_check"]) ):
-            vec = Vector(numberOfDimenstion)
+            vec = Vector(dimensions)
             vec.v =  json_converted["to_check"][i]["values"]
-            to_check.append( [ i, vec, 0] )
+            instance.unchecked_population.append( [vec, 0] )
 
-        print('Backups/Evo' + str(numberOfDimenstion) + "_" + str(spawnerType) + ": Backup Loaded")
-        return True, population, to_check, json_converted["generation"], json_converted["date_time"]
+        instance.generation    = json_converted["generation"]
+        instance.dateTime      = json_converted["date_time"]
+        PARAMS.ELITARY_SELECT = json_converted["mutation_rate"]
+        PARAMS.MUTATION_RATE = json_converted["elythys_rate"]
+        instance.best_found    = json_converted["best_found"]
+        instance.avrg_tetriminos = json_converted["avg"]
 
-    def save_evolution(self, evolutionAlgoritm):
+        print('Backups/' + instance.NAME + ": Backup Loaded")
+        return True
+
+    def save_evolution(self, instance):
         backup = {
-            "generation"      : evolutionAlgoritm.generation,
-            "date_time"       : evolutionAlgoritm.dateTime,
-            "number_of_tetrominos_per_game" : MAX_NUMBER_PER_GAME_EVO,
-            "left_to_process" : len(evolutionAlgoritm.unchecked_population),
-            "number_of_games" : evolutionAlgoritm.NUMBER_OF_PLAYED_GAMES,
+            "generation"      : instance.generation,
+            "date_time"       : instance.dateTime,
+            "number_of_tetrominos_per_game" : PARAMS.MAX_POINTS,
+            "left_to_process" : len(instance.unchecked_population),
+            "number_of_games" : PARAMS.NUMBER_OF_GAMES,
             "reset"           : False,
-            "population_size" : len(evolutionAlgoritm.population),
-            "mutation_rate"   : evolutionAlgoritm.MUTATION_RATE,
+            "population_size" : len(instance.population),
+            "mutation_rate"   : PARAMS.MUTATION_RATE,
+            "elythys_rate"    : PARAMS.ELITARY_SELECT,
+            "best_found"      : [instance.best_found[0], instance.best_found[1]],
+            "avg"             : instance.avrg_tetriminos,
+
             "population"      : [],
-            "to_check"        : []
+            "to_check"        : [],
+            "parents"         : [],
+            "p_population"    : []
         }
 
-        for i in range( len(evolutionAlgoritm.population) ):
-            if i >= evolutionAlgoritm.POPULATION_SIZE + evolutionAlgoritm.NEW_POPULATION_SIZE: continue
+        for i in range( len(instance.population) ):
             backup["population"].append( {
-                "score"  : evolutionAlgoritm.population[i][1],
-                "values" : evolutionAlgoritm.population[i][0].v
+                "score"  : instance.population[i][1],
+                "values" : instance.population[i][0].v
             })
 
-        for i in range( len(evolutionAlgoritm.unchecked_population) ):
-            if i >= evolutionAlgoritm.NEW_POPULATION_SIZE: continue
+        for i in range( len(instance.unchecked_population) ):
             backup["to_check"].append( {
-                "values"  : evolutionAlgoritm.unchecked_population[i][1].v
+                "values" : instance.unchecked_population[i][0].v
             })
 
-       # print( len(backup["population"]), len(backup["to_check"]) )
-        with open('Backups/Evo' + str(evolutionAlgoritm.EVOLUTION_VECTOR_DIMENSIONS) + "_G" + str(evolutionAlgoritm.spawnerType) + "_D" + str(evolutionAlgoritm.NUMBER_OF_PLAYED_GAMES)  +  "_T" + str(evolutionAlgoritm.TYPE) + "_MAX" + str(MAX_NUMBER_PER_GAME_EVO) + "_P" + str(evolutionAlgoritm.POPULATION_SIZE) + "_M" + str(evolutionAlgoritm.MUTATION_RATE)  + "_RP" + str(evolutionAlgoritm.FIT_TYPE) + '.json', 'w') as outfile:
+        for i in range( len(instance.parents) ):
+            backup["parents"].append( {
+                "score"  : instance.parents[i][1],
+                "values" : instance.parents[i][0].v
+            })
+
+        for i in range( len(instance.prev_population) ):
+            backup["p_population"].append( {
+                "score"  : instance.prev_population[i][1],
+                "values" : instance.prev_population[i][0].v
+            })
+
+        with open('Backups/' + instance.NAME + '.json', 'w') as outfile:
             json.dump(backup, outfile, indent=4)
 
-    def load_pso(self, numberOfDimenstion, sizeOfPopulation, spawnerType, c1, c2, w):
-        fileName = 'Backups/PSO' + str(numberOfDimenstion)
-        fileName += "_G" + str(spawnerType)
-        fileName += "_P" + str(sizeOfPopulation)
-        fileName += "_TMAX" + str(MAX_NUMBER_PER_GAME_PSO)
-        fileName += "_C1-" + str(c1)
-        fileName += "_C2-" + str(c2)
-        fileName += "_W-"  + str(w)
-
+    def load_pso(self, pso_instance):
         json_converted = None
+        filename = 'Backups/' + pso_instance.NAME
         try:
-            with open(fileName + '.json', 'r') as json_file:
+            with open(filename + '.json', 'r') as json_file:
                 json_converted = json.loads(json_file.read())
         except IOError:
-            return False, [], 0, "", 0, None, 0
+            print("No valid backup instance for filename=" + filename)
+            return False
 
-        if sizeOfPopulation != json_converted["particles_number"] or MAX_NUMBER_PER_GAME_PSO != json_converted["number_of_tetrominos_per_game"]:
-            print(  fileName + ": Backup is different, couldn't read from file")
-            return False, [], 0, "", 0, None, 0
-
-        population = []
-        for i in range( sizeOfPopulation ):
-            part = Particle( nmberOfDimension=numberOfDimenstion, curr_score=json_converted["particles"][i]["curr_score"])
+        pso_instance.particles = []
+        for i in range( PARAMS.POPULATION_SIZE ):
+            part = Particle( nmberOfDimension=PARAMS.HEURYSTIC_AMOUNT, curr_score=json_converted["particles"][i]["curr_score"])
             part.dir_v.v    = json_converted["particles"][i]["dir_v"]
             part.pos_v.v    = json_converted["particles"][i]["pos_v"]
             part.best_pos.v = json_converted["particles"][i]["best_pos"]
             part.curr_score = json_converted["particles"][i]["curr_score"]
             part.best_score = json_converted["particles"][i]["best_score"] 
-            population.append( part )
+            pso_instance.particles.append( part )
 
-        print(fileName+  ": Backup Loaded")
-        bestVector = Vector(numberOfDimenstion)
-        bestVector.v = json_converted["best_particle_pos"]
-        return True, population, json_converted["iteration"], json_converted["date_time"], json_converted["current_index"], bestVector, json_converted["best_score"]
+        pso_instance.iteraiton = json_converted["iteration"] 
+        pso_instance.dateTime  = json_converted["date_time"]
+        pso_instance.index     = json_converted["current_index"]
 
+        pso_instance.best_pos   = Vector(PARAMS.HEURYSTIC_AMOUNT)
+        pso_instance.best_pos.v = json_converted["best_particle_pos"]
+        pso_instance.best_score = json_converted["best_score"]
+        return True
 
-    def save_pso(self, particles, currentParticleIndex, bestParticlePosition, bestScore, iteration, dateTime, numberOfDimenstions, spawnerId, c1, c2, w ):
-        while len(self.particles[numberOfDimenstions]) != len(particles) :
-            self.particles[numberOfDimenstions].append({
-                "dir_v" : particles[len(self.particles[numberOfDimenstions]) - 1].dir_v.v,
-                "pos_v" : particles[len(self.particles[numberOfDimenstions]) - 1].pos_v.v,
-                "best_pos" : particles[len(self.particles[numberOfDimenstions]) -1].best_pos.v,
-                "best_score" : particles[len(self.particles[numberOfDimenstions]) -1].best_score,
-                "curr_score" : particles[len(self.particles[numberOfDimenstions]) -1].curr_score
+    def save_pso(self, pso_instance):
+        backup = {
+            "date_time"         : pso_instance.dateTime,
+            "iteration"         : pso_instance.iteration,
+            "c1"                : PARAMS.C1,
+            "c2"                : PARAMS.C2,
+            "w"                 : PARAMS.W,
+            "current_index"     : pso_instance.index,
+            "best_particle_pos" : pso_instance.best_pos.v,
+            "best_score"        : pso_instance.best_score,
+            "particles_number"  : PARAMS.POPULATION_SIZE,
+            "number_of_tetrominos_per_game" : PARAMS.MAX_POINTS,
+            "particles"         : []
+        }
+
+        for i in range( PARAMS.POPULATION_SIZE ):
+            backup["particles"].append({
+                "dir_v"      : pso_instance.particles[i].dir_v.v,
+                "pos_v"      : pso_instance.particles[i].pos_v.v,
+                "best_pos"   : pso_instance.particles[i].best_pos.v,
+                "best_score" : pso_instance.particles[i].best_score,
+                "curr_score" : pso_instance.particles[i].curr_score
             })
         
-        self.particles[ numberOfDimenstions ][ currentParticleIndex ] = {
-            "dir_v"      : particles[currentParticleIndex].dir_v.v,
-            "pos_v"      : particles[currentParticleIndex].pos_v.v,
-            "best_pos"   : particles[currentParticleIndex].best_pos.v,
-            "best_score" : particles[currentParticleIndex].best_score,
-            "curr_score" : particles[currentParticleIndex].curr_score
-        }
-
-        backup = {
-            "date_time"         : dateTime,
-            "iteration"         : iteration,
-            "c1"                : c1,
-            "c2"                : c2,
-            "w"                 : w,
-            "current_index"     : currentParticleIndex,
-            "best_particle_pos" : bestParticlePosition.v,
-            "best_score"        : bestScore,
-            "particles_number"  : len(particles),
-            "number_of_tetrominos_per_game" : MAX_NUMBER_PER_GAME_PSO,
-            "particles"        : self.particles[ numberOfDimenstions ]
-        }
-
-        fileName = 'Backups/PSO' + str(numberOfDimenstions)
-        fileName += "_G" + str(spawnerId)
-        fileName += "_P" + str(len(particles))
-        fileName += "_TMAX" + str(MAX_NUMBER_PER_GAME_PSO)
-        fileName += "_C1-" + str(c1)
-        fileName += "_C2-" + str(c2)
-        fileName += "_W-"  + str(w)
-
+        fileName = 'Backups/' + pso_instance.NAME
         with open(fileName + '.json', 'w') as outfile:
             json.dump(backup, outfile, indent=4)
 
